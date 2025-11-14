@@ -84,12 +84,27 @@ let priorityUsers = [
     "User5"
 ];
 
+// UPDATED extractVideoId FUNCTION
 function extractVideoId(link) {
     try {
-        let url = new URL(link);
-        if (url.searchParams.get("v")) return url.searchParams.get("v");
-        if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/")[2];
-    } catch (e) {}
+        const url = new URL(link);
+
+        // 1. Standard YouTube link
+        if (url.searchParams.get("v")) {
+            return url.searchParams.get("v");
+        }
+
+        // 2. Shorts link
+        if (url.pathname.startsWith("/shorts/")) {
+            return url.pathname.split("/")[2];
+        }
+
+        // 3. youtu.be short link
+        if (url.hostname === "youtu.be") {
+            return url.pathname.replace("/", "").split("?")[0];
+        }
+
+    } catch (err) {}
     return null;
 }
 
@@ -118,7 +133,6 @@ async function loadComments() {
 
         let list = data.comments;
 
-        // Filter duplicates
         if (document.getElementById("filterDup").checked) {
             const map = {};
             list.forEach(c => map[c.channelId] = c);
@@ -148,14 +162,12 @@ function pickWinner() {
 
     winnerBox.style.display = "none";
 
-    // prepare priority filter
     let priorityList = globalComments.filter(c =>
         priorityUsers.map(x => x.toLowerCase()).includes(c.author.toLowerCase())
     );
 
     let poolToPickFrom = priorityList.length > 0 ? priorityList : globalComments;
 
-    // Jumping animation
     let times = 25;
     let i = 0;
 
