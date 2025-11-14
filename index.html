@@ -17,7 +17,7 @@ body {
   padding: 30px 14px;
 }
 
-/* MAIN WHITE BOX (single box only) */
+/* MAIN WHITE BOX */
 .mainBox {
   width: 100%;
   max-width: 550px;
@@ -25,11 +25,10 @@ body {
   border-radius: 22px;
   padding: 22px;
   box-shadow: 0 8px 22px rgba(0,0,0,0.18);
-  box-sizing: border-box;
   text-align: center;
+  box-sizing: border-box;
 }
 
-/* Title */
 .title {
   font-size: 20px;
   font-weight: 800;
@@ -37,7 +36,7 @@ body {
   margin-bottom: 18px;
 }
 
-/* Input */
+/* INPUT */
 .input {
   width: 100%;
   padding: 12px 14px;
@@ -48,19 +47,18 @@ body {
   box-sizing: border-box;
 }
 
-/* Checkbox */
+/* CHECKBOX */
 .checkRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
   justify-content: left;
-  margin-bottom: 16px;
   color: #0f2b43;
   font-weight: 600;
+  margin-bottom: 16px;
 }
 
-/* Big button */
+/* BUTTONS */
 .bigBtn {
   width: 100%;
   background: #083b66;
@@ -74,7 +72,6 @@ body {
   margin-bottom: 16px;
 }
 
-/* Counter pill */
 .countBox {
   display: none;
   background: #ffffff;
@@ -88,7 +85,7 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* SHUFFLE AREA (winner also shows here) */
+/* SHUFFLE AREA */
 .shuffleArea {
   width: 100%;
   padding: 24px;
@@ -98,7 +95,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Shuffle avatar */
 .avatar {
   width: 120px;
   height: 120px;
@@ -113,15 +109,19 @@ body {
   object-fit: cover;
 }
 
-/* Name */
 .shuffleName {
   font-weight: 900;
   font-size: 19px;
-  color: #0f2b43;
   margin-bottom: 6px;
+  color: #0f2b43;
 }
 
-/* Comment text */
+.shuffleName a {
+  color: #0066ff;
+  text-decoration: none;
+  font-weight: 900;
+}
+
 .shuffleComment {
   font-size: 14px;
   color: #496f89;
@@ -130,7 +130,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* START circle */
+/* START CIRCLE */
 .startCircle {
   width: 150px;
   height: 150px;
@@ -148,7 +148,7 @@ body {
   box-shadow: 0 12px 28px rgba(0,0,0,0.15);
 }
 
-/* Pick again button */
+/* PICK ANOTHER WINNER */
 .pickAgain {
   display: none;
   width: 100%;
@@ -181,11 +181,12 @@ body {
 
   <div id="countBox" class="countBox"></div>
 
-  <!-- SHUFFLE & WINNER AREA -->
   <div id="shuffleArea" class="shuffleArea" style="display:none;">
 
     <div class="avatar"><img id="shuffleImg" src=""></div>
+
     <div id="shuffleName" class="shuffleName">—</div>
+
     <div id="shuffleComment" class="shuffleComment"></div>
 
     <div id="startBtn" class="startCircle" onclick="startRaffle()">START</div>
@@ -204,7 +205,6 @@ let pickPool = [];
 let visiblePool = [];
 let animating = false;
 
-/* extract video id */
 function extractVideoId(link){
   try{
     const u = new URL(link);
@@ -215,16 +215,16 @@ function extractVideoId(link){
   return null;
 }
 
-/* ---------------- LOAD COMMENTS ---------------- */
+/* LOAD COMMENTS */
 async function loadComments(){
   const link = document.getElementById("videoLink").value.trim();
   const vid = extractVideoId(link);
 
   if(!vid){ alert("Invalid YouTube link"); return; }
 
-  const countBox = document.getElementById("countBox");
-  countBox.style.display = "inline-block";
-  countBox.textContent = "Counting…";
+  const box = document.getElementById("countBox");
+  box.style.display = "inline-block";
+  box.textContent = "Counting…";
 
   document.getElementById("shuffleArea").style.display = "none";
 
@@ -234,90 +234,87 @@ async function loadComments(){
 
     allComments = data.comments || [];
     pickPool = data.pool || [];
-
     visiblePool = [...allComments];
 
-    // Front-end duplicate filter
     if(document.getElementById("filterDup").checked){
       let seen = {};
       visiblePool = visiblePool.filter(c=>{
-        const k = c.channelId || c.author;
-        if(seen[k]) return false;
-        seen[k] = true;
+        if(seen[c.channelId]) return false;
+        seen[c.channelId] = true;
         return true;
       });
     }
 
     const total = visiblePool.length;
-    
-    // counting animation
+
     let i = 0;
-    const speed = Math.max(10, Math.floor(1200/total));
+    const speed = Math.max(8, Math.floor(1500 / total));
+
     let counter = setInterval(()=>{
       if(i >= total){
         clearInterval(counter);
-        countBox.innerHTML = `Amount of comments: <strong>${total}</strong>`;
+        box.innerHTML = `Amount of comments: <strong>${total}</strong>`;
         document.getElementById("shuffleArea").style.display = "block";
         return;
       }
-      countBox.innerHTML = `Counting: <strong>${i}</strong>`;
+      box.innerHTML = `Counting: <strong>${i}</strong>`;
       i++;
     }, speed);
 
-  }catch(e){
-    countBox.textContent = "Error loading";
+
+  }catch(err){
+    box.textContent = "Error loading.";
   }
 }
 
-/* ---------------- SHUFFLE ---------------- */
+
+/* SHUFFLE */
 function startRaffle(){
   if(animating) return;
   animating = true;
 
-  const shuffleImg = document.getElementById("shuffleImg");
-  const shuffleName = document.getElementById("shuffleName");
-  const shuffleComment = document.getElementById("shuffleComment");
+  // 🔥 Immediately hide START button
+  document.getElementById("startBtn").style.display = "none";
 
-  document.getElementById("pickAgain").style.display = "none";
+  const img = document.getElementById("shuffleImg");
+  const name = document.getElementById("shuffleName");
+  const com = document.getElementById("shuffleComment");
 
-  const duration = 7200;
-  const steps = 45;
+  let steps = 50;
   let i = 0;
-
-  function showRandom(){
-    const p = visiblePool[Math.floor(Math.random()*visiblePool.length)];
-
-    shuffleImg.src = p.profileImageUrl || "";
-    shuffleName.textContent = "@" + p.author;
-    shuffleComment.textContent = p.comment || "";
-  }
-
   let interval = setInterval(()=>{
-    showRandom();
+    const r = visiblePool[Math.floor(Math.random()*visiblePool.length)];
+    img.src = r.profileImageUrl || "";
+    name.textContent = "@" + r.author;
+    com.textContent = r.comment || "";
     i++;
     if(i >= steps){
       clearInterval(interval);
       animating = false;
       chooseWinner();
     }
-  }, Math.max(60, duration/steps));
+  }, 70);
 }
 
-/* ---------------- FINAL PICK (priority pool) ---------------- */
+
+/* FINAL PICK WITH CLICKABLE HANDLE */
 function chooseWinner(){
   const final = pickPool[Math.floor(Math.random()*pickPool.length)];
 
   document.getElementById("shuffleImg").src = final.profileImageUrl || "";
-  document.getElementById("shuffleName").textContent = "@" + final.author;
+
+  document.getElementById("shuffleName").innerHTML =
+    `<a href="https://youtube.com/channel/${final.channelId}" target="_blank">@${final.author}</a>`;
+
   document.getElementById("shuffleComment").textContent = final.comment || "";
 
-  document.getElementById("startBtn").style.display = "none";
   document.getElementById("pickAgain").style.display = "block";
 }
 
-/* ---------------- PICK NEXT WINNER ---------------- */
+
+/* NEXT WINNER */
 function pickAnother(){
-  document.getElementById("startBtn").style.display = "none";
+  document.getElementById("pickAgain").style.display = "none";
   startRaffle();
 }
 
