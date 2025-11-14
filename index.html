@@ -1,427 +1,363 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Comment Picker — Blue</title>
+<meta charset="UTF-8">
+<title>YouTube Comment Picker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-:root{
-  --blue:#1f89c9;       /* primary page blue */
-  --blue-dark:#0c5d8a;  /* button darker */
-  --white:#ffffff;
-  --card-radius:18px;
-  --shadow: 0 18px 40px rgba(8,33,56,0.35);
-  --muted: rgba(255,255,255,0.85);
-}
-/* Page */
-html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,var(--blue),#0f78b3);display:flex;justify-content:center;padding:18px;color:var(--white);box-sizing:border-box;}
-.container{width:100%;max-width:920px;display:flex;flex-direction:column;gap:18px;align-items:center}
-
-/* Top white rounded input card (full width style from screenshot) */
-.inputCard{
-  width:100%;
-  background:var(--white);
-  color:#043044;
-  border-radius:26px;
-  padding:18px;
-  box-shadow:var(--shadow);
-  border: 4px solid rgba(255,255,255,0.06);
-}
-.headerRow{display:flex;flex-direction:column;gap:8px}
-.title{font-size:18px;font-weight:800;margin:0;color:var(--blue-dark)}
-.subtitle{font-size:13px;margin:0;color:#2e6e90}
-
-/* Input field style */
-.inputFull{
-  width:100%;
-  padding:12px 14px;
-  border-radius:12px;
-  border:1px solid rgba(4,48,68,0.06);
-  font-size:15px;
-  margin-top:8px;
+/* ------------------- GLOBAL DESIGN ------------------- */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #1d82c5;   /* FULL BLUE BACKGROUND */
+  color: #fff;
+  text-align: center;
 }
 
-/* single checkbox row (white text) */
-.controlsRow{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:12px;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.checkboxLabel{
-  display:flex;align-items:center;gap:10px;color:var(--white);font-weight:700;font-size:15px;
-}
-.checkboxLabel input{width:18px;height:18px;transform:scale(1.05)}
-
-/* Big rounded load button (dark blue with white text) */
-.loadBtn{
-  background:var(--blue-dark);
-  color:var(--white);
-  padding:12px 18px;
-  border-radius:999px;
-  border:none;
-  font-weight:900;
-  font-size:15px;
-  cursor:pointer;
-  box-shadow:0 10px 30px rgba(4,42,73,0.35);
+/* Container */
+.container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 22px;
 }
 
-/* Animated count pill — white rounded with small left accent */
-.countRow{margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.countPill{
-  background:var(--white);
-  color:#07304f;
-  padding:10px 16px;
-  border-radius:999px;
-  font-weight:800;
-  box-shadow:0 8px 20px rgba(2,16,30,0.18);
-  display:flex;align-items:center;gap:12px;
-}
-.countLeft{width:6px;height:32px;border-radius:8px;background:var(--blue-dark);transform:translateX(-8px);box-shadow:0 6px 12px rgba(2,16,30,0.06);}
-
-/* Big stage card (white) with start circle and single-slot shuffle */
-.stage{
-  width:100%;
-  background:var(--white);
-  border-radius:20px;
-  padding:28px;
-  box-shadow:var(--shadow);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:16px;
+/* White Cards */
+.box {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 14px;
+  margin-top: 18px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  color: #0f2b43;
+  text-align: left;
 }
 
-/* big start circle */
-.startCircle{
-  width:170px;height:170px;border-radius:50%;background:var(--white);display:flex;align-items:center;justify-content:center;flex-direction:column;
-  border:10px solid var(--blue-dark);box-shadow:0 30px 60px rgba(2,16,30,0.32);cursor:pointer;user-select:none;
-}
-.startLabel{font-weight:900;color:var(--blue-dark);font-size:22px}
-.startNote{font-size:12px;color:#3e6f90;margin-top:6px}
-
-/* single-profile shuffle slot (center of the stage) */
-.shuffleSlot{
-  width:240px;height:120px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-}
-.avatarBig{
-  width:72px;height:72px;border-radius:50%;overflow:hidden;border:4px solid var(--white);box-shadow:0 10px 24px rgba(2,16,30,0.12);
-  background:#f6fbff;display:flex;align-items:center;justify-content:center;
-}
-.avatarBig img{width:100%;height:100%;object-fit:cover}
-.nameShuf{font-weight:800;color:var(--blue-dark);font-size:16px}
-.commentShuf{font-size:13px;color:#4f7e9a;text-align:center;padding:0 8px}
-
-/* Winner card (after pick) — replicate screenshot style */
-.winnerCard{
-  width:100%;max-width:560px;background:var(--white);border-radius:16px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 18px 50px rgba(2,16,30,0.18)
-}
-.winnerLabel{font-weight:900;color:var(--blue-dark);font-size:14px}
-.winnerAvatar{width:96px;height:96px;border-radius:50%;overflow:hidden;border:6px solid var(--white);box-shadow:0 12px 30px rgba(2,16,30,0.12)}
-.winnerAvatar img{width:100%;height:100%;object-fit:cover}
-.winnerHandle{font-weight:900;color:var(--blue-dark);font-size:20px}
-.winnerCommentBox{width:100%;background:#f6fbff;padding:12px;border-radius:10px;color:#0b475f;text-align:center;border:1px solid rgba(2,16,30,0.04)}
-
-/* pick new winner button */
-.pickAgain{margin-top:10px;padding:10px 16px;border-radius:999px;border:none;background:var(--blue-dark);color:var(--white);font-weight:800;cursor:pointer}
-
-/* confetti bits */
-.confetti{
-  position:fixed;pointer-events:none;z-index:9999;
+/* Title inside card */
+.boxTitle {
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
-/* responsive */
-@media (max-width:720px){
-  .startCircle{width:140px;height:140px;border-width:8px}
-  .shuffleSlot{width:200px;height:110px}
-  .avatarBig{width:64px;height:64px}
-  .winnerCard{padding:14px}
-  .inputCard{padding:14px;border-radius:16px}
+/* Input */
+input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #c8d7e4;
+  font-size: 15px;
+  margin-top: 6px;
+}
+
+/* Checkbox Line */
+.checkRow {
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #0f2b43;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+/* Buttons BLUE + ROUND */
+.bigBtn {
+  width: 100%;
+  background: #083b66;
+  color: white;
+  padding: 14px;
+  border-radius: 30px;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 18px;
+  cursor: pointer;
+}
+
+/* Comment Count */
+.countBox {
+  display: none;
+  background: #ffffff;
+  padding: 10px 18px;
+  margin-top: 12px;
+  border-radius: 12px;
+  font-size: 17px;
+  color: #0f2b43;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+/* START AREA */
+.startCard {
+  display: none;
+  background: #ffffff;
+  padding: 40px 10px;
+  margin-top: 25px;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+
+.startTitle {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 25px;
+}
+
+.startCircle {
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: #f0f4f8;
+  border: 10px solid #1d82c5;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  font-weight: bold;
+  color: #0f2b43;
+  cursor: pointer;
+  box-shadow: 0 0 35px rgba(0,0,0,0.12);
+}
+
+/* Winner Box */
+.winnerCard {
+  display: none;
+  background: #ffffff;
+  padding: 25px 18px;
+  margin-top: 22px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  color: #0f2b43;
+  text-align: center;
+}
+
+.trophy {
+  font-size: 45px;
+  margin-bottom: 10px;
+}
+
+.profilePic {
+  width: 90px;
+  height: 90px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 4px solid #1d82c5;
+}
+
+.profilePic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.winnerName {
+  margin-top: 10px;
+  font-size: 19px;
+  font-weight: bold;
+}
+
+.winnerName a {
+  color: #0f2b43;
+  text-decoration: none;
+}
+
+.winnerComment {
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 10px;
+  background: #f4f8fb;
+  border-radius: 8px;
+  border: 1px solid #d4e1ec;
+}
+
+/* Pick New Winner Button */
+.newBtn {
+  width: 100%;
+  background: #083b66;
+  color: #fff;
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 17px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.shuffleBox {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 12px;
+  display: none;
+  color: #fff;
 }
 </style>
 </head>
+
+
 <body>
-  <div class="container">
 
-    <!-- Top white input card -->
-    <div class="inputCard" aria-label="Video input">
-      <div class="headerRow">
-        <div class="title">YouTube & Giveaway Settings</div>
-        <div class="subtitle">Paste your YouTube video or Shorts link below</div>
-      </div>
+<div class="container">
 
-      <input id="videoLink" class="inputFull" placeholder="https://youtu.be/xxxxx or https://www.youtube.com/watch?v=xxxxx" />
+  <!-- LINK INPUT CARD -->
+  <div class="box">
+    <div class="boxTitle">YouTube Video Link</div>
+    <input id="videoLink" type="text" placeholder="https://youtu.be/...">
 
-      <div class="controlsRow" style="margin-top:12px">
-        <label class="checkboxLabel" style="background:transparent">
-          <input id="filterDup" type="checkbox" checked />
-          <span style="color:var(--blue-dark)">Filter duplicate & bot accounts</span>
-        </label>
-
-        <div style="display:flex;gap:10px">
-          <button id="loadBtn" class="loadBtn" onclick="loadComments()">Load all unique comments</button>
-        </div>
-      </div>
-
-      <!-- animated counts -->
-      <div id="countArea" class="countRow" style="display:none">
-        <div class="countPill">
-          <div class="countLeft"></div>
-          <div style="display:flex;flex-direction:column">
-            <div style="font-size:12px;color:#2e6e90">Total unique comments</div>
-            <div id="totalCountNumber" style="font-size:18px">0</div>
-          </div>
-        </div>
-      </div>
+    <div class="checkRow">
+      <input id="filterDup" type="checkbox" checked>
+      <label for="filterDup">Filter duplicate & bot comments</label>
     </div>
 
-    <!-- Stage (start circle, shuffle slot) -->
-    <div class="stage" aria-live="polite">
-      <div class="subtitle" style="color:#6daee0;font-weight:800">Start raffle & pick winner</div>
-
-      <!-- the central single-profile shuffle slot -->
-      <div class="shuffleSlot" id="shuffleSlot" aria-hidden="true">
-        <div class="avatarBig" id="shufAvatar" aria-hidden="true"><img id="shufImg" src="" alt=""></div>
-        <div class="nameShuf" id="shufName">—</div>
-        <div class="commentShuf" id="shufComment"></div>
-      </div>
-
-      <!-- big start circle (single) -->
-      <div id="startCircle" class="startCircle" role="button" tabindex="0">
-        <div class="startLabel">START</div>
-        <div class="startNote">Tap to shuffle</div>
-      </div>
-
-      <!-- winner area (hidden until picked) -->
-      <div id="winnerWrapper" style="display:none;width:100%;align-items:center;flex-direction:column">
-        <div class="winnerCard" id="winnerCard" role="status">
-          <div class="winnerLabel">WINNER</div>
-          <div class="winnerAvatar" id="winnerAvatar"><img id="winnerAvatarImg" src="" alt=""></div>
-          <div class="winnerHandle" id="winnerHandle">@winner</div>
-          <div class="winnerCommentBox" id="winnerCommentBox"></div>
-          <button id="pickAgain" class="pickAgain">Pick new winner</button>
-        </div>
-      </div>
-    </div>
-
+    <button class="bigBtn" onclick="loadComments()">LOAD UNIQUE COMMENTS</button>
   </div>
 
+  <!-- COMMENT COUNT BOX -->
+  <div id="commentCount" class="countBox"></div>
+
+  <!-- START RAFFLE UI -->
+  <div id="startCard" class="startCard">
+    <div class="startTitle">START RAFFLE & PICK WINNER</div>
+    <div class="startCircle" onclick="startRaffle()">START</div>
+  </div>
+
+  <!-- SHUFFLE NAMES -->
+  <div id="shuffleBox" class="shuffleBox"></div>
+
+  <!-- WINNER RESULT -->
+  <div id="winnerCard" class="winnerCard">
+    <div class="trophy">🏆</div>
+
+    <div class="profilePic"><img id="winnerImg" src=""></div>
+
+    <div id="winnerName" class="winnerName"></div>
+
+    <div id="winnerComment" class="winnerComment"></div>
+
+    <button class="newBtn" onclick="pickAnother()">PICK NEW WINNER</button>
+  </div>
+
+</div>
+
+
 <script>
-/* ---------------- CONFIG - use your working backend URL ---------------- */
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbwrudRpmIP1rzMD79VpZUb1AYKs3Wxne1eD6FfBjWlPyyucpvgZ1mp8f3cb3xoN09SW/exec";
+/* ---------------- BACKEND LINK ---------------- */
+const BACKEND_URL =
+"https://script.google.com/macros/s/AKfycbwrudRpmIP1rzMD79VpZUb1AYKs3Wxne1eD6FfBjWlPyyucpvgZ1mp8f3cb3xoN09SW/exec";
 
 /* STATE */
-let secretPool = [];     // pool returned from backend (priority or fallback)
-let allComments = [];    // raw
-let currentVid = "";
-let countingTimer = null;
+let pool = [];
+let currentVideoId = "";
 
-/* DOM */
-const totalCountNumber = document.getElementById('totalCountNumber');
-const countArea = document.getElementById('countArea');
-const shufImg = document.getElementById('shufImg');
-const shufName = document.getElementById('shufName');
-const shufComment = document.getElementById('shufComment');
-const startCircle = document.getElementById('startCircle');
-const winnerWrapper = document.getElementById('winnerWrapper');
-const winnerAvatarImg = document.getElementById('winnerAvatarImg');
-const winnerHandle = document.getElementById('winnerHandle');
-const winnerCommentBox = document.getElementById('winnerCommentBox');
-const pickAgainBtn = document.getElementById('pickAgain');
-
-/* helpers */
+/* Extract Video ID */
 function extractVideoId(link){
-  try{
+  try {
     const u = new URL(link);
-    if(u.searchParams.get('v')) return u.searchParams.get('v');
-    if(u.hostname === 'youtu.be') return u.pathname.replace('/','').split('?')[0];
-    if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2];
-  }catch(e){}
+    if (u.searchParams.get("v")) return u.searchParams.get("v");
+    if (u.hostname === "youtu.be") return u.pathname.slice(1);
+    if (u.pathname.startsWith("/shorts/"))
+      return u.pathname.split("/")[2];
+  } catch(e){}
   return null;
 }
 
-/* Animate count: simulate counting up digits with tiny blink */
-function animateCount(to){
-  clearInterval(countingTimer);
-  const el = totalCountNumber;
-  let current = 0;
-  const step = Math.max(1, Math.floor(to/40));
-  el.textContent = '0';
-  let blink = false;
-  countingTimer = setInterval(()=>{
-    current += step;
-    if(current >= to) current = to;
-    el.textContent = current.toString();
-    blink = !blink;
-    // quick blink effect on the small left stripe (via transform)
-    el.parentElement.style.transform = blink ? 'translateY(-1px)' : 'translateY(0)';
-    if(current >= to){
-      clearInterval(countingTimer);
-      el.parentElement.style.transform = 'translateY(0)';
-    }
-  }, 35);
-}
 
-/* Load comments from backend */
+/* ---------------- LOAD COMMENTS ---------------- */
 async function loadComments(){
-  // reset UI
-  winnerWrapper.style.display = 'none';
-  shufImg.src = '';
-  shufName.textContent = '—';
-  shufComment.textContent = '';
-  secretPool = [];
-  allComments = [];
-  currentVid = '';
+  const link = document.getElementById("videoLink").value.trim();
+  const videoId = extractVideoId(link);
+  const countBox = document.getElementById("commentCount");
 
-  const link = document.getElementById('videoLink').value.trim();
-  const vid = extractVideoId(link);
-  if(!vid){
-    alert('Invalid YouTube link');
+  if(!videoId){
+    alert("Invalid YouTube link");
     return;
   }
-  currentVid = vid;
 
-  // show loading note on circle
-  startCircle.querySelector('.startNote').textContent = 'Loading comments…';
+  currentVideoId = videoId;
+
+  countBox.style.display = "block";
+  countBox.innerHTML = "⏳ Loading comments…";
 
   try{
-    const resp = await fetch(`${BACKEND_URL}?videoId=${encodeURIComponent(vid)}`);
-    const data = await resp.json();
+    const res = await fetch(`${BACKEND_URL}?videoId=${videoId}`);
+    const data = await res.json();
+
     if(data.error){
-      console.error('backend error', data.error);
-      startCircle.querySelector('.startNote').textContent = 'Load failed';
-      alert('Backend error: ' + (data.error.message || JSON.stringify(data.error)));
+      countBox.innerHTML = "❌ Error loading comments";
       return;
     }
 
-    // store
-    allComments = data.comments || [];
-    let totals = data.totalComments || allComments.length || 0;
-    // secret pool (returned already priority filtered if needed)
-    secretPool = (data.pool || []).slice();
+    pool = data.pool || [];
 
-    // apply front-end duplicate/bot filtering if checkbox is set:
-    if(document.getElementById('filterDup').checked){
-      const seen = {};
-      secretPool = secretPool.filter(c => {
-        const k = (c.channelId || c.author || '').toString();
-        if(seen[k]) return false;
-        seen[k] = true;
-        return true;
-      });
-    }
+    countBox.innerHTML =
+      `Amount of comments: <strong>${data.uniqueUsers}</strong>`;
 
-    // show counts and animate
-    countArea.style.display = 'flex';
-    animateCount(totals);
+    document.getElementById("startCard").style.display = "block";
 
-    // set initial preview to first user (if exists)
-    if(secretPool.length > 0){
-      const first = secretPool[0];
-      shufImg.src = first.profileImageUrl || '';
-      shufName.textContent = first.author || '';
-      shufComment.textContent = first.comment ? (first.comment.length > 70 ? first.comment.slice(0,67)+'...' : first.comment) : '';
-      startCircle.querySelector('.startNote').textContent = 'Tap to start';
-    } else {
-      startCircle.querySelector('.startNote').textContent = 'No commenters';
-      shufImg.src = '';
-      shufName.textContent = '—';
-      shufComment.textContent = '';
-    }
   }catch(err){
-    console.error(err);
-    startCircle.querySelector('.startNote').textContent = 'Network error';
-    alert('Network error while loading comments.');
+    countBox.innerHTML = "❌ Network error";
   }
 }
 
-/* Shuffle one-by-one animation and final pick */
-let animating = false;
-async function startShufflePick(){
-  if(animating) return;
-  if(!secretPool || secretPool.length === 0){
-    alert('No comments to pick from. Load comments first.');
-    return;
-  }
-  animating = true;
-  winnerWrapper.style.display = 'none';
-  startCircle.querySelector('.startNote').textContent = 'Selecting...';
 
-  // single-slot visual: iterate through secretPool randomly many times, show one profile at a time
-  const iterations = 40; // higher = longer
+/* ---------------- START SHUFFLING ---------------- */
+function startRaffle(){
+  const shuffle = document.getElementById("shuffleBox");
+  const winnerCard = document.getElementById("winnerCard");
+
+  shuffle.style.display = "block";
+  shuffle.innerHTML = "";
+  winnerCard.style.display = "none";
+
+  let rounds = 35;
   let i = 0;
-  let delay = 80;
-  for(; i < iterations; i++){
-    const idx = Math.floor(Math.random() * secretPool.length);
-    const p = secretPool[idx];
-    shufImg.src = p.profileImageUrl || '';
-    shufName.textContent = p.author || '';
-    shufComment.textContent = p.comment ? (p.comment.length > 80 ? p.comment.slice(0,77)+'...' : p.comment) : '';
-    // gradually slow down
-    await new Promise(res => setTimeout(res, delay));
-    if(i > iterations * 0.6) delay = 140;
-    if(i > iterations * 0.85) delay = 230;
-  }
 
-  // final pick
-  const final = secretPool[Math.floor(Math.random() * secretPool.length)];
-  setTimeout(()=>finishPick(final), 220);
+  const shuffler = setInterval(()=>{
+    const r = pool[Math.floor(Math.random()*pool.length)];
+    shuffle.innerHTML = r.author;
+    i++;
+
+    if(i >= rounds){
+      clearInterval(shuffler);
+      showWinner();
+    }
+  }, 80);
 }
 
-/* Display winner card and confetti */
-function finishPick(final){
-  animating = false;
-  startCircle.querySelector('.startNote').textContent = 'Tap to start';
-  if(!final) return;
-  // show winner card
-  winnerAvatarImg.src = final.profileImageUrl || '';
-  winnerHandle.textContent = '@' + (final.author || 'unknown');
-  winnerCommentBox.textContent = final.comment || '';
-  winnerWrapper.style.display = 'flex';
-  // small confetti effect (DOM bits)
-  launchConfetti();
+
+/* ---------------- SHOW WINNER ---------------- */
+function showWinner(){
+  const shuffle = document.getElementById("shuffleBox");
+  shuffle.style.display = "none";
+
+  const winnerCard = document.getElementById("winnerCard");
+  winnerCard.style.display = "block";
+
+  const final = pool[Math.floor(Math.random()*pool.length)];
+
+  document.getElementById("winnerImg").src = final.profileImageUrl || "";
+  document.getElementById("winnerName").innerHTML =
+    `<a href="https://youtube.com/channel/${final.channelId}" target="_blank">@${final.author}</a>`;
+
+  document.getElementById("winnerComment").innerHTML =
+    final.comment || "";
 }
 
-/* Launch simple confetti (vanilla) */
-function launchConfetti(){
-  const colors = ['#ffd66f','#ff9fa2','#9ef0b1','#9ed8ff','#d09eff'];
-  const num = 28;
-  for(let i=0;i<num;i++){
-    const el = document.createElement('div');
-    el.className = 'confetti';
-    el.style.width = (6 + Math.random()*8) + 'px';
-    el.style.height = (8 + Math.random()*8) + 'px';
-    el.style.background = colors[Math.floor(Math.random()*colors.length)];
-    el.style.left = (50 + (Math.random()*60 - 30)) + '%';
-    el.style.top = (40 + Math.random()*20) + '%';
-    el.style.position = 'fixed';
-    el.style.borderRadius = (Math.random()>0.6? '2px':'50%');
-    el.style.opacity = '0.95';
-    el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
-    document.body.appendChild(el);
-    // animate fall
-    const fall = 900 + Math.random()*900;
-    el.animate([
-      { transform: `translateY(0) rotate(0deg)`, opacity:1 },
-      { transform: `translateY(${200 + Math.random()*400}px) rotate(${Math.random()*720}deg)`, opacity:0.85 }
-    ], { duration: fall, easing:'cubic-bezier(.2,.8,.2,1)'});
-    // remove after animation
-    setTimeout(()=> el.remove(), fall + 200);
-  }
+
+/* ---------------- PICK NEW WINNER ---------------- */
+function pickAnother(){
+  showWinner();
 }
-
-/* Wire events */
-document.getElementById('loadBtn').addEventListener('click', loadComments);
-startCircle.addEventListener('click', startShufflePick);
-startCircle.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' ') startShufflePick(); });
-pickAgainBtn.addEventListener('click', () => startShufflePick());
-
-/* small: allow pressing Enter in input to load comments */
-document.getElementById('videoLink').addEventListener('keydown', e => {
-  if(e.key === 'Enter') loadComments();
-});
 </script>
+
 </body>
 </html>
