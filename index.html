@@ -1,279 +1,341 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>YouTube Giveaway Picker — Pro Edition</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>YouTube Random Picker — Blue Edition</title>
 
 <style>
-/* ---------- GLOBAL DARK THEME ---------- */
-body {
-    margin: 0;
-    font-family: 'Inter', Arial, sans-serif;
-    background: radial-gradient(circle at top, #1b1b1b, #000000);
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 40px 20px;
-}
+  :root{
+    --bg:#0b6aa6;       /* deep blue background */
+    --panel:#ffffff;    /* white card */
+    --muted:#97c8e6;    /* lighter blue */
+    --accent:#0078ff;   /* button accent */
+    --text:#0b2340;     /* dark text on white */
+    --card-radius:14px;
+  }
 
-/* ---------- MAIN CARD ---------- */
-.container {
-    width: 100%;
-    max-width: 600px;
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(18px);
-    border-radius: 24px;
-    padding: 35px;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
-    animation: fadeIn 0.8s ease;
-}
+  html,body{height:100%;margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#0a4f82);color:#fff;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:28px;}
 
-/* Fade in */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+  /* Container */
+  .wrap{width:100%;max-width:920px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:22px;align-items:start}
 
-/* ---------- HEADER ---------- */
-h1 {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 5px;
-    text-align: center;
-}
+  /* Left panel (controls) */
+  .panel{
+    background:rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+    border-radius:var(--card-radius);
+    padding:20px;
+    box-shadow:0 8px 30px rgba(2,18,34,0.45);
+    border:1px solid rgba(255,255,255,0.06);
+  }
 
-.subtitle {
-    text-align: center;
-    color: #bbb;
-    font-size: 16px;
-    margin-bottom: 30px;
-}
+  .panel h2{margin:0 0 8px;font-size:20px;color:#eaf7ff}
+  .panel .desc{font-size:13px;color:rgba(255,255,255,0.75);margin-bottom:14px}
 
-/* ---------- INPUTS + BUTTONS ---------- */
-input, button {
-    width: 100%;
-    padding: 14px;
-    font-size: 17px;
-    border-radius: 14px;
-    border: none;
-    outline: none;
-    margin-top: 12px;
-}
+  .field{background:#f5fbff;border-radius:10px;padding:12px;border:1px solid rgba(11,35,64,0.06);color:var(--text);display:flex;flex-direction:column;gap:8px}
+  .label{font-size:13px;color:var(--text);font-weight:600}
+  .input, .select, .textarea{
+    border-radius:10px;border:1px solid rgba(11,35,64,0.06);padding:10px;font-size:15px;background:#fff;color:var(--text);outline:none;
+  }
+  .textarea{min-height:78px;resize:vertical}
 
-input {
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.15);
-}
+  .row{display:flex;gap:10px;align-items:center}
+  .small{font-size:13px;color:rgba(255,255,255,0.8)}
 
-input::placeholder {
-    color: #aaa;
-}
+  .btn{
+    background:linear-gradient(180deg,var(--accent),#005fe6);
+    color:#fff;padding:12px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:15px;box-shadow:0 8px 22px rgba(3,79,255,0.18);
+  }
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600}
 
-button {
-    background: linear-gradient(135deg, #007aff, #0051ff);
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s ease;
-}
+  .controls {display:flex;gap:10px;margin-top:12px}
+  .checkbox {display:flex;align-items:center;gap:8px;color:#eaf7ff}
 
-button:hover {
-    background: linear-gradient(135deg, #3395ff, #1a66ff);
-    transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(0,122,255,0.4);
-}
+  .meta {margin-top:12px;background:linear-gradient(180deg,#0f5480,#0a3c5f);padding:12px;border-radius:10px;color:#fff;font-weight:600;font-size:14px;text-align:center}
 
-/* ---------- CHECKBOX ---------- */
-.checkbox-row {
-    margin-top: 15px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 15px;
-}
+  /* Right panel (Result / Winner) */
+  .resultCard{
+    background:var(--panel);
+    color:var(--text);
+    border-radius:18px;
+    padding:18px;
+    box-shadow:0 14px 50px rgba(3,28,58,0.25);
+    border:1px solid rgba(4,20,40,0.05);
+    min-height:420px;
+    display:flex;flex-direction:column;gap:12px;
+  }
 
-/* ---------- STATUS BOX ---------- */
-#status {
-    margin-top: 20px;
-    padding: 18px;
-    background: rgba(0,0,0,0.4);
-    border-radius: 12px;
-    text-align: center;
-    font-size: 17px;
-    min-height: 40px;
-}
+  .winnerHeader{display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:6px}
+  .trophy{width:66px;height:66px;border-radius:16px;background:linear-gradient(180deg,#ffd66f,#ffb347);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(255,160,60,0.25)}
+  .trophy svg{width:34px;height:34px}
+  .winnerLabel{font-size:12px;color:#667;letter-spacing:1px;font-weight:700}
+  .winnerName{font-size:22px;font-weight:800;color:#07304f}
+  .winnerName a{color:#07304f;text-decoration: none}
+  .winnerComment{font-size:14px;color:#0a2340;background:#f7fbff;padding:10px;border-radius:10px;border:1px solid rgba(11,35,64,0.02)}
 
-/* ---------- WINNER CARD ---------- */
-#winnerBox {
-    margin-top: 25px;
-    display: none;
-    padding: 25px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 18px;
-    text-align: center;
-    animation: fadeIn 0.6s ease;
-}
+  .giveawayDetails{margin-top:8px;background:#f3f8ff;border-radius:10px;padding:10px;border:1px solid rgba(11,35,64,0.04);color:#07304f}
+  .gd-row{display:flex;justify-content:space-between;align-items:center;padding:8px 2px;border-bottom:1px solid rgba(11,35,64,0.02)}
+  .gd-row:last-child{border-bottom:none}
+  .gd-left{font-size:13px;color:#14507a}
+  .gd-right{font-weight:700;color:#03314a}
 
-.winnerName {
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
+  .actions{display:flex;gap:10px;margin-top:auto}
+  .neutral{background:transparent;border:1px solid rgba(3,28,58,0.06);color:#07304f;padding:10px;border-radius:10px;font-weight:700;cursor:pointer}
+  .primary{background:linear-gradient(180deg,#006aff,#0051d9);color:#fff;padding:10px;border-radius:10px;border:none;font-weight:800;cursor:pointer}
 
-.winnerComment {
-    color: #ddd;
-    font-size: 16px;
-    margin-bottom: 15px;
-}
+  /* status area visual */
+  #statusBox{background:linear-gradient(90deg,#0f6ea8,#0b5da0);padding:10px;border-radius:10px;color:#eaf7ff;text-align:center;font-weight:600}
 
-.winnerLink a {
-    color: #4da3ff;
-    text-decoration: none;
-    font-size: 17px;
-}
-
-/* Jump animation for winner */
-@keyframes jump {
-    0% { transform: scale(0.4); opacity: 0.3; }
-    50% { transform: scale(1.3); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.randomCard {
-    padding: 6px;
-    font-size: 20px;
-    text-align: center;
-}
+  /* small responsive behavior */
+  @media (max-width:900px){
+    .wrap{grid-template-columns:1fr; padding:10px}
+    .resultCard{min-height:360px}
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="wrap">
 
-    <h1>YouTube Giveaway Picker</h1>
-    <div class="subtitle">Premium Dark Edition — Fast • Clean • Modern</div>
+  <!-- LEFT: Controls -->
+  <div class="panel">
+    <h2>YOUTUBE &AMP; GIVEAWAY SETTINGS</h2>
+    <div class="desc">Paste a YouTube video or shorts link, choose filters and load comments.</div>
 
-    <input id="videoLink" placeholder="Paste YouTube video link here">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="field">
+        <div class="label">YouTube Video or Shorts link</div>
+        <input id="videoLink" class="input" placeholder="https://youtu.be/abcXYZ or https://youtube.com/watch?v=abcXYZ">
+        <div class="small">Example: https://youtu.be/egH5hKD913Y?si=...</div>
+      </div>
 
-    <div class="checkbox-row">
-        <input type="checkbox" id="filterDup">
-        <label for="filterDup">Filter Duplicate Users</label>
+      <div class="field">
+        <div class="label">YouTube Giveaway Settings & Filters</div>
+        <label class="checkbox"><input type="checkbox" id="filterDupCheckbox" checked> Filter duplicate users</label>
+        <label class="checkbox"><input type="checkbox" id="includeReplies"> Add comment replies (not recommended)</label>
+        <div class="small">(Duplicate filter keeps only one comment per unique channel ID)</div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="btn" id="loadBtn" onclick="loadComments()">GET YOUTUBE COMMENTS</button>
+        <button class="btn secondary" id="clearBtn" onclick="clearAll()">CLEAR</button>
+      </div>
+
+      <div id="statusBox" style="display:none;margin-top:10px"></div>
+
+      <div class="field" style="margin-top:12px">
+        <div class="label">Raffle Settings</div>
+        <div class="small">Winners: <strong>1</strong> (for now)</div>
+      </div>
+
+      <div class="meta">Free users: up to 10,000 comments (depends on API quota)</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Result / Winner card -->
+  <div class="resultCard">
+
+    <div class="winnerHeader">
+      <div class="trophy" aria-hidden="true">
+        <!-- trophy icon -->
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M8 3h8v2H8z" fill="#fff" opacity="0.12"/>
+          <path d="M7 5a2 2 0 0 0-2 2v1c0 2 2 3 4 3v1a3 3 0 0 0 3 3h0a3 3 0 0 0 3-3v-1c2 0 4-1 4-3V7a2 2 0 0 0-2-2H7z" fill="#fff" opacity="0.18"/>
+          <path d="M8 6v1c0 1.1.9 2 2 2h4c1.1 0 2-.9 2-2V6" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 2l1.5 2.75L16 6l-2.5 1L12 10l-1.5-3L8 6l2.5-.25L12 2z" fill="#fff"/>
+        </svg>
+      </div>
+
+      <div class="winnerLabel">WINNER</div>
+      <div id="winnerName" class="winnerName">—</div>
     </div>
 
-    <button onclick="loadComments()">Load All Comments</button>
+    <div id="winnerComment" class="winnerComment" style="display:none">"</div>
 
-    <div id="status"></div>
-
-    <button id="pickBtn" onclick="pickWinner()" style="display:none; margin-top:20px;">Pick Random Winner</button>
-
-    <div id="winnerBox">
-        <div id="winner" class="winnerName"></div>
-        <div id="winnerComment" class="winnerComment"></div>
-        <div class="winnerLink"><a id="winnerChannel" href="#" target="_blank">Visit Channel</a></div>
+    <div class="giveawayDetails" id="giveawayDetails" style="display:none">
+      <div class="gd-row"><div class="gd-left">Entries</div><div id="gd-entries" class="gd-right">0</div></div>
+      <div class="gd-row"><div class="gd-left">Date</div><div id="gd-date" class="gd-right">—</div></div>
+      <div class="gd-row"><div class="gd-left">Video</div><div id="gd-video" class="gd-right"><a id="gd-video-link" href="#" target="_blank" style="color:#034a68;text-decoration:underline">—</a></div></div>
+      <div class="gd-row"><div class="gd-left">Source</div><div class="gd-right">By ytrandompicker</div></div>
     </div>
 
+    <div id="statusArea" style="margin-top:6px"></div>
+
+    <div style="display:flex;gap:10px;align-items:center;justify-content:center">
+      <button id="pickBtn" class="primary" onclick="pickWinner()" style="display:none">Pick Winner</button>
+      <button id="newBtn" class="neutral" onclick="resetAfterPick()" style="display:none">Pick New Winner</button>
+    </div>
+
+  </div>
 </div>
 
 <script>
+/* ----------------- CONFIG ----------------- */
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbxWXlfC2mT0u9K6ci3d1zX_ktTOTw4VOktdkj2yoVq1L8-8146f1ELcKMHmXW_am572/exec";
 
-let globalComments = [];
+/* Priority usernames — edit here to set your 5 preferred names (hidden to users) */
 let priorityUsers = ["User1","User2","User3","User4","User5"];
 
-/* -------- FIXED VIDEO ID DETECTOR -------- */
-function extractVideoId(link) {
-    try {
-        const url = new URL(link);
-        if (url.searchParams.get("v")) return url.searchParams.get("v");
-        if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/")[2];
-        if (url.hostname === "youtu.be") return url.pathname.replace("/", "").split("?")[0];
-    } catch {}
-    return null;
+/* Internal state */
+let rawComments = [];     // full comment objects from backend
+let filteredComments = []; // after dedupe if selected
+
+/* ----------------- Helpers ----------------- */
+function extractVideoId(link){
+  try{
+    const u = new URL(link);
+    // watch?v=
+    if(u.searchParams.get('v')) return u.searchParams.get('v');
+    // shorts
+    if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2];
+    // youtu.be short
+    if(u.hostname === 'youtu.be') return u.pathname.replace('/','').split('?')[0];
+  }catch(e){}
+  return null;
 }
 
-/* -------- LOAD COMMENTS -------- */
-async function loadComments() {
-    const link = document.getElementById("videoLink").value.trim();
-    const status = document.getElementById("status");
-    const pickBtn = document.getElementById("pickBtn");
+/* show/hide helpers */
+function show(el){ el.style.display = 'block'; }
+function hide(el){ el.style.display = 'none'; }
 
-    const videoId = extractVideoId(link);
-    if (!videoId) return status.innerHTML = "❌ Invalid YouTube URL";
+/* format date human */
+function nowFormatted(){
+  const d = new Date();
+  return d.toLocaleString();
+}
 
-    status.innerHTML = "⏳ Loading comments...";
-    pickBtn.style.display = "none";
+/* ----------------- UI ELEMENTS ----------------- */
+const statusBox = document.getElementById('statusBox');
+const statusArea = document.getElementById('statusArea');
+const loadBtn = document.getElementById('loadBtn');
+const pickBtn = document.getElementById('pickBtn');
+const newBtn = document.getElementById('newBtn');
 
-    try {
-        const res = await fetch(`${BACKEND_URL}?videoId=${videoId}`);
-        const data = await res.json();
+const winnerNameEl = document.getElementById('winnerName');
+const winnerCommentEl = document.getElementById('winnerComment');
+const detailsEl = document.getElementById('giveawayDetails');
+const entriesEl = document.getElementById('gd-entries');
+const dateEl = document.getElementById('gd-date');
+const videoEl = document.getElementById('gd-video-link');
 
-        if (!data.comments) return status.innerHTML = "❌ Failed to load comments.";
+/* ----------------- Load Comments ----------------- */
+async function loadComments(){
+  const link = document.getElementById('videoLink').value.trim();
+  const videoId = extractVideoId(link);
 
-        let list = data.comments;
+  // UI reset
+  hide(pickBtn); hide(newBtn);
+  hide(detailsEl); hide(winnerCommentEl);
+  winnerNameEl.textContent = '—';
+  statusBox.style.display = 'none';
+  statusArea.textContent = '';
 
-        if (document.getElementById("filterDup").checked) {
-            const map = {};
-            list.forEach(c => map[c.channelId] = c);
-            list = Object.values(map);
-        }
+  if(!videoId){
+    statusBox.textContent = '❌ Invalid YouTube URL';
+    statusBox.style.display = 'block';
+    return;
+  }
 
-        globalComments = list;
+  statusBox.textContent = '⏳ Loading comments — this may take a few seconds';
+  statusBox.style.display = 'block';
 
-        status.innerHTML =
-            `✅ Total Comments Loaded: <b>${data.comments.length}</b><br>` +
-            `🎯 Unique Users: <b>${list.length}</b>`;
+  try{
+    const resp = await fetch(`${BACKEND_URL}?videoId=${videoId}`);
+    const data = await resp.json();
 
-        pickBtn.style.display = "block";
-
-    } catch (error) {
-        status.innerHTML = "❌ Error — could not fetch comments.";
+    if(!data || !data.comments){
+      statusBox.textContent = '❌ Failed to load comments (empty result)';
+      return;
     }
+
+    rawComments = data.comments.map(c => ({ author: c.author, channelId: c.channelId, comment: c.comment }));
+    // apply duplicate filter if checked
+    const dedupe = document.getElementById('filterDupCheckbox').checked;
+    if(dedupe){
+      const map = {};
+      rawComments.forEach(c => { map[c.channelId] = c; });
+      filteredComments = Object.values(map);
+    } else {
+      filteredComments = rawComments.slice();
+    }
+
+    // update status UI
+    statusBox.innerHTML = `✅ Loaded <strong>${rawComments.length}</strong> total comments<br>🎯 Unique users: <strong>${filteredComments.length}</strong>`;
+    show(pickBtn);
+
+    // prepare giveaway details
+    entriesEl.textContent = filteredComments.length;
+    dateEl.textContent = nowFormatted();
+    videoEl.textContent = videoId;
+    videoEl.href = `https://youtube.com/watch?v=${videoId}`;
+    show(detailsEl);
+
+  }catch(err){
+    console.error(err);
+    statusBox.textContent = '❌ Error fetching comments (see console)';
+  }
 }
 
-/* -------- PICK WINNER -------- */
-function pickWinner() {
-    if (!globalComments.length) return;
+/* ----------------- Pick Winner Logic ----------------- */
+function pickWinner(){
+  if(!filteredComments.length) return alert('No comments loaded');
 
-    const winnerBox = document.getElementById("winnerBox");
-    const winner = document.getElementById("winner");
-    const winnerComment = document.getElementById("winnerComment");
-    const winnerChannel = document.getElementById("winnerChannel");
+  // priority matching (case-insensitive)
+  const pset = priorityUsers.map(x=>x.toLowerCase());
+  const priorityList = filteredComments.filter(c => pset.includes(c.author.toLowerCase()));
 
-    winnerBox.style.display = "none";
+  const pool = priorityList.length ? priorityList : filteredComments;
 
-    let priorityList = globalComments.filter(c =>
-        priorityUsers.map(x => x.toLowerCase()).includes(c.author.toLowerCase())
-    );
-
-    let pool = priorityList.length ? priorityList : globalComments;
-
-    let times = 25;
-    let i = 0;
-
-    const interval = setInterval(() => {
-        const random = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById("status").innerHTML =
-            `<div class='randomCard'>${random.author}</div>`;
-        i++;
-
-        if (i >= times) {
-            clearInterval(interval);
-
-            const final = pool[Math.floor(Math.random() * pool.length)];
-
-            winner.textContent = final.author;
-            winnerComment.textContent = `"${final.comment}"`;
-            winnerChannel.href = "https://youtube.com/channel/" + final.channelId;
-
-            winnerBox.style.display = "block";
-            winnerBox.style.animation = "jump 0.5s ease";
-        }
-    }, 100);
+  // simple jumping card animation: show names quickly, then final
+  let rounds = 28;
+  let i = 0;
+  statusArea.innerHTML = '';
+  const interval = setInterval(()=>{
+    const r = pool[Math.floor(Math.random()*pool.length)];
+    statusArea.innerHTML = `<div style="background:#eaf6ff;padding:10px;border-radius:8px;color:#03314a;font-weight:700;text-align:center">${r.author}</div>`;
+    i++;
+    if(i>=rounds){
+      clearInterval(interval);
+      const final = pool[Math.floor(Math.random()*pool.length)];
+      winnerNameEl.innerHTML = `<a href="https://youtube.com/channel/${final.channelId}" target="_blank">@${final.author}</a>`;
+      winnerCommentEl.style.display = 'block';
+      winnerCommentEl.textContent = final.comment ? `“${final.comment}”` : '';
+      show(newBtn);
+      hide(pickBtn);
+      // set details if not present already
+      entriesEl.textContent = filteredComments.length;
+      dateEl.textContent = nowFormatted();
+      show(detailsEl);
+      statusBox.style.display = 'none';
+      statusArea.innerHTML = `<div style="text-align:center;color:#0a2340;font-weight:700">Winner picked</div>`;
+    }
+  },90);
 }
+
+/* ----------------- Reset / Clear ----------------- */
+function resetAfterPick(){
+  // just allow picking again from same loaded comments
+  hide(newBtn); show(pickBtn);
+  statusArea.textContent = '';
+  winnerCommentEl.style.display = 'none';
+  winnerNameEl.textContent = '—';
+  statusBox.style.display = 'block';
+  statusBox.textContent = 'Ready to pick a new winner';
+}
+
+function clearAll(){
+  document.getElementById('videoLink').value = '';
+  rawComments = []; filteredComments = [];
+  winnerNameEl.textContent = '—';
+  winnerCommentEl.textContent = '';
+  hide(pickBtn); hide(newBtn); hide(detailsEl); hide(winnerCommentEl);
+  statusArea.textContent = '';
+  statusBox.style.display = 'none';
+}
+
+/* ----------------- initial UI state ----------------- */
+hide(pickBtn); hide(newBtn); hide(detailsEl); hide(winnerCommentEl);
 </script>
-
 </body>
 </html>
