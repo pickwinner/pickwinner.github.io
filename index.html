@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>YouTube Random Comment Picker — 10s Constant Raffle</title>
+<title>YouTube Random Comment Picker</title>
 <style>
 :root{
   --brand: #1788D1;        /* slightly brighter blue */
@@ -21,11 +21,10 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial; background:var
 /* header */
 .header{text-align:center;margin-bottom:22px}
 .title{font-weight:900;font-size:44px;margin:0}
-.subtitle{font-weight:700;color:var(--white);margin-top:8px;font-size:18px}
 
 /* Controls on blue background (not inside a white box) */
 .controlsWrap{margin-top:28px;padding:20px 0;display:flex;flex-direction:column;gap:18px}
-.labelText{font-weight:900;color:var(--white);font-size:14px;letter-spacing:0.6px;margin-bottom:14px}
+.labelText{font-weight:900;color:var(--white);font-size:14px;letter-spacing:0.6px;margin-bottom:18px}
 .inputMain{
   width:100%;padding:16px 18px;border-radius:999px;border:0;background:var(--white);color:var(--text-dark);font-size:16px;box-sizing:border-box;box-shadow:0 10px 28px rgba(0,0,0,0.08)
 }
@@ -43,13 +42,11 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial; background:var
 .loadBtn{
   background:var(--white);color:var(--text-dark);font-weight:900;padding:14px 20px;border-radius:999px;border:none;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.12)
 }
-.countPill{display:none;background:rgba(255,255,255,0.95);color:var(--text-dark);padding:10px 14px;border-radius:999px;font-weight:900}
+.countPill{display:inline-block;background:rgba(255,255,255,0.95);color:var(--text-dark);padding:10px 14px;border-radius:999px;font-weight:900}
 
 /* Stage card (single static white card) */
 .stage{
   margin-top:30px;background:var(--white);color:var(--text-dark);border-radius:22px;padding:28px;box-shadow:var(--shadow);min-height:420px;display:none;flex-direction:column;align-items:center;gap:12px;box-sizing:border-box;
-  /* keep layout stable */
-  transition:opacity .18s ease;
 }
 .stageInner{
   width:100%;max-width:720px;display:flex;flex-direction:column;align-items:center;gap:14px;
@@ -65,7 +62,7 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial; background:var
 .handle a{color:var(--brand);text-decoration:none}
 .commentBox{width:84%;min-height:56px;max-height:140px;background:#f7fbff;color:#114b63;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,0,0,0.03);box-shadow:0 8px 20px rgba(3,48,80,0.04);overflow:auto;display:none}
 
-/* start circle box (visible only after load complete) */
+/* start circle box */
 .startBox{
   width:100%;
   display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:center;padding:36px 0;
@@ -97,14 +94,12 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial; background:var
   <div class="container">
     <div class="header">
       <div class="title">YOUTUBE RANDOM COMMENT PICKER</div>
-      <div class="subtitle">PICK GIVEAWAY WINNER — 10s FAST RAFFLE</div>
     </div>
 
     <!-- Controls on blue background -->
     <div class="controlsWrap" role="region" aria-label="controls">
       <div>
         <div class="labelText">VIDEO LINK BELOW</div>
-        <!-- increased gap already via margin-bottom of labelText -->
         <input id="videoLink" class="inputMain" placeholder="https://youtu.be/..." aria-label="video link" />
       </div>
 
@@ -124,7 +119,7 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial; background:var
 
       <div class="controlsButtons">
         <button id="loadBtn" class="loadBtn">LOAD ALL UNIQUE COMMENTS</button>
-        <div id="countPill" class="countPill" aria-live="polite"></div>
+        <div id="countPill" class="countPill" aria-live="polite">Amount of comments: 0</div>
       </div>
     </div>
 
@@ -164,10 +159,11 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial; background:var
 /* ---------- Config ---------- */
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzS2QT2vSJ_RoXiQACij7iUWcmcJqFBHEelNrC7h1-XfRcdOx1gdQ1ZvJQuNruRRXM9xA/exec";
 const RAFFLE_DURATION_MS = 10000; // 10 seconds constant
+const TICK_DELAY = 60; // ms per profile during shuffle (constant fast)
 
 /* ---------- State ---------- */
-let visibleComments = [];    // used for visuals (excludes persisted winners)
-let pickPool = [];           // eligible pool returned from backend (already excludes persisted winners)
+let visibleComments = [];    // visuals (excludes persisted winners)
+let pickPool = [];           // actual eligible pool (backend excluded persisted winners)
 let usedThisSession = new Set();
 let currentVideoId = "";
 let animating = false;
@@ -206,13 +202,12 @@ function extractVideoId(link){
   return null;
 }
 function showCount(text){ countPill.style.display='inline-block'; countPill.innerHTML = text; }
-function hideCount(){ countPill.style.display='none'; }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
 
 /* collapse toggle */
 useFilterWords.addEventListener('change', ()=>{ collapse.style.display = useFilterWords.checked ? 'block' : 'none'; });
 
-/* ---------- Load comments (counts only, no start until complete) ---------- */
+/* ---------- Load comments (counts only, Start shown only after complete) ---------- */
 loadBtn.addEventListener('click', async ()=>{
   const link = videoLinkEl.value.trim();
   const vid = extractVideoId(link);
@@ -227,7 +222,7 @@ loadBtn.addEventListener('click', async ()=>{
   pickAgainBtn.style.display = 'none'; shareRow.style.display = 'none';
   startBox.style.display = 'none';
   stage.style.display = 'none';
-  topHint.style.display = 'block'; // will remain shown top of stage when revealed
+  topHint.style.display = 'block';
 
   showCount('⏳ Loading comments...');
   loadBtn.disabled = true;
@@ -243,32 +238,24 @@ loadBtn.addEventListener('click', async ()=>{
       showCount('❌ Backend error'); console.error(data.error); loadBtn.disabled = false; return;
     }
 
-    // server returns:
-    // data.comments -> full list for visuals
-    // data.pickPool -> actual eligible pool (backend excluded persisted winners)
-    // data.usedWinners -> list of channelIds already used (persisted)
     visibleComments = (data.comments || []).slice();
     pickPool = (data.pickPool || []).slice();
 
-    // mark backend used winners locally and remove them from visuals
+    // mark backend-used winners and remove them from visuals
     const usedFromBackend = data.usedWinners || [];
     usedFromBackend.forEach(u => usedThisSession.add(u));
     visibleComments = visibleComments.filter(c => !usedThisSession.has(c.channelId));
 
-    // animate counting numbers (no spinner) until final target
+    // animate counting and wait until complete
     const total = data.uniqueUsers || visibleComments.length || 0;
-    await animateCount(total); // wait until done
+    await animateCount(total);
 
-    // show stage after counting completes
+    // show stage after counting completes, but keep count visible
     stage.style.display = 'flex';
-    startBox.style.display = 'flex';        // show the start circle area
+    startBox.style.display = 'flex';
     topHint.style.display = 'block';
-    hideCount();
     loadBtn.disabled = false;
-
-    // small info show
-    showCount(`✅ Loaded ${total} unique`);
-    setTimeout(()=> hideCount(), 2400);
+    showCount(`✅ Loaded ${total} unique`); // keep visible
 
   } catch(err){
     console.error(err);
@@ -277,12 +264,11 @@ loadBtn.addEventListener('click', async ()=>{
   }
 });
 
-/* Counting animation (returns promise when complete) */
+/* Counting animation (promise) */
 function animateCount(target){
   return new Promise((resolve)=> {
     countPill.style.display = 'inline-block';
     let cur = 0;
-    // small steps so counting feels smooth but finishes quick
     const steps = Math.min(60, Math.max(6, Math.floor(Math.max(1, target) / 2)));
     const inc = Math.max(1, Math.floor(Math.max(1, target) / steps));
     const delay = Math.max(12, Math.floor(700 / steps));
@@ -292,117 +278,113 @@ function animateCount(target){
       countPill.innerHTML = `Amount of comments: <strong>${cur}</strong>`;
       if(cur >= target){
         clearInterval(t);
-        // short pause then resolve
-        setTimeout(()=> resolve(), 260);
+        setTimeout(()=> resolve(), 200);
       }
     }, delay);
   });
 }
 
-/* ---------- Start shuffle (constant fast for exactly RAFFLE_DURATION_MS) ---------- */
-startCircle.addEventListener('click', ()=> {
+/* ---------- Start shuffle (constant fast for RAFFLE_DURATION_MS) ---------- */
+startCircle.addEventListener('click', async ()=> {
   if(animating) return;
   if(!visibleComments || visibleComments.length === 0){
     showCount('No comments loaded');
     return;
   }
 
-  // hide start & pickAgain during animation
+  // refresh pickPool and choose final winner now so we can ensure last tick shows final
+  await refreshPickPool();
+
+  // exclude usedThisSession from pickPool
+  pickPool = (pickPool || []).filter(p => {
+    const k = p.channelId || (p.author || '').toLowerCase();
+    return !usedThisSession.has(k);
+  });
+
+  // if pickPool empty, fallback to visibleComments
+  let candidates = pickPool && pickPool.length ? pickPool.slice() : visibleComments.slice();
+  candidates = candidates.filter(c => {
+    const id = c.channelId || (c.author || '').toLowerCase();
+    return !usedThisSession.has(id);
+  });
+  if(candidates.length === 0){
+    showCount('No unique candidates left');
+    return;
+  }
+
+  // choose final winner now
+  const final = candidates[Math.floor(Math.random() * candidates.length)];
+
+  // prepare a sequence for visuals: steps = Math.ceil(duration / TICK_DELAY)
+  const steps = Math.max(20, Math.floor(RAFFLE_DURATION_MS / TICK_DELAY));
+  const localPool = visibleComments.slice().filter(c => {
+    const id = c.channelId || (c.author || '').toLowerCase();
+    return id !== (final.channelId || final.author.toLowerCase());
+  });
+
+  // ensure we have at least one element; if not, use candidates including final
+  if(localPool.length === 0){
+    localPool.push(...(visibleComments.length ? visibleComments.slice() : candidates.slice()));
+  }
+
+  // build sequence by concatenating shuffled copies until length >= steps-1
+  let sequence = [];
+  while(sequence.length < steps - 1){
+    sequence = sequence.concat(shuffle(localPool.slice()));
+  }
+  sequence = sequence.slice(0, steps - 1);
+
+  // append final as last element to ensure no pre-winner hold
+  sequence.push(final);
+
+  // show stage content placeholders
   startBox.style.display = 'none';
-  pickAgainBtn.style.display = 'none';
-  shareRow.style.display = 'none';
   avatarWrap.style.display = 'block';
   handleEl.style.display = 'block';
   commentBox.style.display = 'block';
-
   animating = true;
 
-  // local visuals - use many names so shuffle feels random
-  const local = visibleComments.slice();
-  if(local.length === 0){
-    // fallback: use pickPool
-    local.push(...(pickPool || []));
-  }
-  shuffle(local);
-
-  // constant fast delay: choose a delay that keeps it fast but visible
-  const delay = 60; // ms per profile -> over 10s yields ~166 switches
-  const startTime = Date.now();
-
-  let intervalId = setInterval(()=>{
-    const elapsed = Date.now() - startTime;
-    // pick random local element to display
-    const c = local[Math.floor(Math.random()*local.length)];
+  // iterate sequence at constant TICK_DELAY
+  let idx = 0;
+  const iv = setInterval(()=>{
+    const c = sequence[idx];
     avatarImg.src = c.profileImageUrl || '';
     handleEl.textContent = '@' + (c.author || 'unknown');
     commentBox.textContent = c.comment || '';
 
-    if(elapsed >= RAFFLE_DURATION_MS){
-      clearInterval(intervalId);
+    idx++;
+    if(idx >= sequence.length){
+      clearInterval(iv);
       animating = false;
-      finalizePick(); // immediately finalize at 10s
+      // final is last element; it's already displayed from sequence
+      // persist winner and show pickAgain/share/confetti
+      finalizePick_whenFinalAlreadyDisplayed(final);
     }
-  }, delay);
+  }, TICK_DELAY);
 });
 
-/* ---------- Finalize pick: choose a final winner from pickPool and persist ---------- */
-async function finalizePick(){
-  try {
-    // refresh pickPool (to get latest persisted used winners)
-    await refreshPickPool();
-
-    // ensure pickPool excludes usedThisSession
-    pickPool = (pickPool || []).filter(p => {
-      const key = p.channelId || (p.author || '').toLowerCase();
-      return !usedThisSession.has(key);
-    });
-
-    // fallback to visibleComments if pickPool empty
-    let candidates = pickPool && pickPool.length ? pickPool.slice() : visibleComments.slice();
-    candidates = candidates.filter(c => {
-      const id = c.channelId || (c.author || '').toLowerCase();
-      return !usedThisSession.has(id);
-    });
-
-    if(candidates.length === 0){
-      showCount('No unique candidates left');
-      startBox.style.display = 'flex';
-      return;
-    }
-
-    // pick final random
-    const final = candidates[Math.floor(Math.random() * candidates.length)];
-
-    // show final immediately
-    avatarImg.src = final.profileImageUrl || '';
-    if(final.channelId){
-      handleEl.innerHTML = `<a href="https://www.youtube.com/channel/${final.channelId}" target="_blank">@${final.author}</a>`;
-    } else {
-      handleEl.textContent = '@' + final.author;
-    }
-    commentBox.textContent = final.comment || '';
-
-    // persist: mark used locally & ask backend to persist
+/* ---------- finalize when we already displayed final in sequence ---------- */
+async function finalizePick_whenFinalAlreadyDisplayed(final){
+  try{
+    // mark used locally & remove from visibleComments
     const key = final.channelId || (final.author || '').toLowerCase();
     usedThisSession.add(key);
     visibleComments = visibleComments.filter(c => (c.channelId || c.author.toLowerCase()) !== key);
 
+    // persist to backend
     try {
       await fetch(BACKEND_URL, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({ action: 'markWinner', videoId: currentVideoId, channelId: final.channelId || final.author })
       });
-    } catch(e){
-      console.warn('persist failed', e);
-    }
+    } catch(e){ console.warn('persist failed', e); }
 
-    // show pick again & share and confetti
+    // show pick again & share & confetti
     pickAgainBtn.style.display = 'block';
     shareRow.style.display = 'flex';
     launchConfetti();
 
-    // prepare share link
     const shareUrl = window.location.origin + window.location.pathname + `?videoId=${encodeURIComponent(currentVideoId)}&winner=${encodeURIComponent(final.channelId || final.author)}`;
     shareBtn.onclick = ()=>{
       if(navigator.clipboard) navigator.clipboard.writeText(shareUrl);
@@ -412,55 +394,33 @@ async function finalizePick(){
 
   } catch(e){
     console.error(e);
-    showCount('Error selecting winner');
+    showCount('Error marking winner');
     startBox.style.display = 'flex';
   }
 }
 
-/* ---------- Pick another (starts another 10s shuffle) ---------- */
+/* ---------- pick again (start another raffle) ---------- */
 pickAgainBtn.addEventListener('click', async ()=>{
-  // hide button while selecting
   pickAgainBtn.style.display = 'none';
   shareRow.style.display = 'none';
 
   // refresh pickPool
   await refreshPickPool();
 
-  // ensure visibleComments not empty
+  // make sure visibleComments has candidates
   if(!visibleComments || visibleComments.length === 0){
     showCount('No remaining candidates');
     startBox.style.display = 'flex';
     return;
   }
 
-  // start the 10s constant shuffle
-  startBox.style.display = 'none';
-  avatarWrap.style.display = 'block';
-  handleEl.style.display = 'block';
-  commentBox.style.display = 'block';
-
-  animating = true;
-  const local = visibleComments.slice();
-  shuffle(local);
-  const delay = 60;
-  const startTime = Date.now();
-
-  let intervalId = setInterval(()=>{
-    const elapsed = Date.now() - startTime;
-    const c = local[Math.floor(Math.random()*local.length)];
-    avatarImg.src = c.profileImageUrl || '';
-    handleEl.textContent = '@' + (c.author || 'unknown');
-    commentBox.textContent = c.comment || '';
-
-    if(elapsed >= RAFFLE_DURATION_MS){
-      clearInterval(intervalId);
-      animating = false;
-      finalizePick();
-    }
-  }, delay);
+  // reuse the same constant sequence method: pick final then build sequence and run it
+  // call the same start logic by simulating click:
+  // We factor out the logic by programmatically triggering startCircle click behavior.
+  startCircle.click();
 });
 
-/* ---------- Refresh pickPool data from backend (keeps used winners updated) ---------- */
+/* ---------- refresh pickPool from backend ---------- */
 async function refreshPickPool(){
   try{
     const filterDup = filterDupEl.checked ? 'true' : 'false';
@@ -471,16 +431,12 @@ async function refreshPickPool(){
     pickPool = data.pickPool || [];
     const usedFromBackend = data.usedWinners || [];
     usedFromBackend.forEach(u => usedThisSession.add(u));
-    // remove used from visibleComments
     visibleComments = visibleComments.filter(c => !usedFromBackend.includes(c.channelId));
-    // ensure pickPool excludes used
     pickPool = pickPool.filter(p => !usedThisSession.has(p.channelId || p.author.toLowerCase()));
-  }catch(e){
-    console.warn('refreshPickPool failed', e);
-  }
+  }catch(e){ console.warn('refreshPickPool failed', e); }
 }
 
-/* ---------- Confetti ---------- */
+/* ---------- confetti ---------- */
 function launchConfetti(){
   const colors = ['#ffd66f','#ff9fa2','#9ef0b1','#9ed8ff','#d09eff','#ffd7a6'];
   for(let i=0;i<28;i++){
@@ -503,7 +459,7 @@ function launchConfetti(){
   }
 }
 
-/* ---------- If landing with query (show saved winner) ---------- */
+/* ---------- show winner from query if present ---------- */
 (async function showFromQuery(){
   const q = new URLSearchParams(location.search);
   const vid = q.get('videoId');
@@ -532,7 +488,6 @@ function launchConfetti(){
     }, 700);
   }
 })();
-
 </script>
 </body>
 </html>
