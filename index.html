@@ -37,7 +37,7 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
   width:100%;
   padding:14px 18px;
   border-radius:999px;
-  border:1px solid rgba(0,0,0,0.06);
+  border:3px solid rgba(10,94,180,0.8);
   background:#fbfdff;
   color:var(--dark);
   font-size:16px;
@@ -46,15 +46,15 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
 }
 
 /* filters (inside card) */
-.filterRow{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
-.checkbox{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--dark);cursor:pointer}
+.filterRow{display:flex;flex-direction:column;gap:18px;margin-bottom:28px}
+.checkbox{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--dark);cursor:pointer}
 
 /* hashtag input */
 .collapse{display:none;margin-top:6px}
 .inputSmall{padding:10px;border-radius:12px;border:none;background:#fff;color:var(--dark);box-shadow:0 8px 18px rgba(0,0,0,0.06);width:60%;}
 
 /* load button & count */
-.loadBtn{width:100%;padding:14px;border-radius:999px;border:none;background:var(--brand);color:#fff;font-weight:900;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,0.12);font-size:16px}
+.loadBtn{width:100%;padding:18px 20px;border-radius:999px;border:none;background:var(--brand);color:#fff;font-weight:900;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,0.12);font-size:18px}
 .countText{margin-top:18px;font-weight:900;font-size:16px;color:var(--dark);text-align:center}
 
 /* stage card (vertical minimal) */
@@ -73,19 +73,19 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
 .commentBox{display:none;background:#f7fbff;color:#114b63;padding:14px 18px;border-radius:12px;margin-top:6px;max-width:86%;text-align:center;box-shadow:0 8px 20px rgba(3,48,80,0.04)}
 
 /* start circle */
-.startBox{display:none;align-items:center;flex-direction:column;margin-top:10px}
-.startCircle{width:150px;height:150px;border-radius:999px;border:12px solid var(--brand);background:var(--white);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--dark);cursor:pointer;box-shadow:0 28px 60px rgba(3,48,80,0.14)}
+.startBox{display:none;align-items:center;flex-direction:column;margin-top:10px;position:relative}
+.startCircle{width:150px;height:150px;border-radius:999px;border:12px solid transparent;background:var(--white);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--dark);cursor:pointer;box-shadow:0 28px 60px rgba(3,48,80,0.14);position:relative;overflow:visible}
 .startHint{color:#588aa8;margin-top:10px}
 
-/* pick again + share */
-.pickAgain{display:none;margin-top:12px;width:220px;background:var(--brand);color:#fff;padding:12px;border-radius:12px;border:none;font-weight:900;cursor:pointer}
-.shareRow{display:none;margin-top:8px;gap:10px;align-items:center;display:flex}
-.shareBtn{background:#0b6aa6;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
+/* progress ring (SVG positioned inside start circle) */
+.startCircle .progress-svg{position:absolute;left:0;top:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none}
+.startCircle .progress-bg{stroke:rgba(0,0,0,0.05);stroke-width:10;fill:none}
+.startCircle .progress-bar{stroke:var(--brand);stroke-width:10;fill:none;stroke-linecap:round;stroke-dasharray:0;stroke-dashoffset:0}
 
-/* confetti */
-#confetti{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:9999}
+/* center content (text or icon) */
+.startCircle .center-content{position:relative;z-index:2;font-weight:900;color:var(--dark);display:flex;align-items:center;justify-content:center}
 
-/* responsive */
+/* smaller size when responsive */
 @media(max-width:720px){
   .title{font-size:30px}
   .avatar{width:110px;height:110px;border-width:6px}
@@ -97,21 +97,21 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
 <body>
   <div class="container">
     <div class="header">
-      <div class="title">YOUTUBE RANDOM COMMENT PICKER</div>
-      <div class="subtitle">giveaway winner picker</div>
+      <div class="title">YouTube Random Comment Picker</div>
+      <div class="subtitle">Giveaway Winner Picker</div>
     </div>
 
     <!-- MERGED WHITE CARD (link + filters + get total + count) -->
     <div class="whiteCard">
       <div class="labelText">VIDEO LINK BELOW</div>
       <!-- input kept strictly inside the white card -->
-      <input id="videoLink" class="inputMain" placeholder="https://youtu.be/..." />
+      <input id="videoLink" class="inputMain" placeholder="Paste YouTube link here" />
 
       <div class="filterRow">
-        <label class="checkbox"><input id="filterDup" type="checkbox" checked> FILTER DUPLICATE &amp; BOT COMMENTS</label>
+        <label class="checkbox"><input id="filterDup" type="checkbox" checked> Filter duplicate &amp; bot comments</label>
 
         <div>
-          <label class="checkbox"><input id="useFilterWords" type="checkbox"> FILTER COMMENTS BY WORD / HASHTAG</label>
+          <label class="checkbox"><input id="useFilterWords" type="checkbox"> Filter comments by a word / hashtag</label>
           <div id="collapse" class="collapse">
             <input id="filterWords" class="inputSmall" placeholder="e.g. giveaway,#win,subscribe" />
           </div>
@@ -132,7 +132,16 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
       <div id="commentBox" class="commentBox"></div>
 
       <div id="startBox" class="startBox">
-        <div id="startCircle" class="startCircle" role="button" tabindex="0">START</div>
+        <div id="startCircle" class="startCircle" role="button" tabindex="0" aria-pressed="false">
+          <!-- SVG progress ring (stroke-dashoffset animated in JS) -->
+          <svg class="progress-svg" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <circle class="progress-bg" cx="75" cy="75" r="64"></circle>
+            <circle id="progressBar" class="progress-bar" cx="75" cy="75" r="64" stroke-linecap="round"></circle>
+          </svg>
+
+          <!-- center content (START text) -->
+          <div class="center-content" id="startLabel">START</div>
+        </div>
         <div class="startHint">Click to begin 10s raffle</div>
       </div>
 
@@ -172,6 +181,8 @@ const filterWordsEl = document.getElementById('filterWords');
 const stage = document.getElementById('stage');
 const startBox = document.getElementById('startBox');
 const startCircle = document.getElementById('startCircle');
+const startLabel = document.getElementById('startLabel');
+const progressBar = document.getElementById('progressBar');
 
 const avatarWrap = document.getElementById('avatarWrap');
 const avatarImg = document.getElementById('avatarImg');
@@ -185,6 +196,29 @@ const shareMsg = document.getElementById('shareMsg');
 const confettiEl = document.getElementById('confetti');
 
 useFilterWords.addEventListener('change', ()=> collapse.style.display = useFilterWords.checked ? 'block' : 'none');
+
+/* ---------- progress ring helpers ---------- */
+const R = 64; // radius used in SVG
+const CIRC = 2 * Math.PI * R;
+progressBar.style.strokeDasharray = CIRC;
+progressBar.style.strokeDashoffset = CIRC;
+progressBar.style.transition = 'none';
+
+function animateProgress(durationMs){
+  // reset
+  progressBar.style.transition = 'none';
+  progressBar.style.strokeDashoffset = CIRC;
+  // allow layout
+  void progressBar.offsetWidth;
+  // animate to 0
+  progressBar.style.transition = `stroke-dashoffset ${durationMs}ms linear`;
+  progressBar.style.strokeDashoffset = 0;
+}
+
+function resetProgress(){
+  progressBar.style.transition = 'none';
+  progressBar.style.strokeDashoffset = CIRC;
+}
 
 /* ---------- HELPERS ---------- */
 function extractVideoId(link){
@@ -212,6 +246,7 @@ loadBtn.addEventListener('click', async ()=>{
   commentBox.style.display='none'; commentBox.textContent='';
   pickAgainBtn.style.display='none'; shareRow.style.display='none';
   startBox.style.display='none'; stage.style.display='none';
+  resetProgress();
 
   countText.innerHTML = '⏳ Loading comments...';
   loadBtn.disabled = true;
@@ -240,6 +275,7 @@ loadBtn.addEventListener('click', async ()=>{
     // show stage and START immediately (no delay)
     stage.style.display='flex';
     startBox.style.display='flex';
+    startLabel.textContent = 'START';
     loadBtn.disabled = false;
   }catch(err){
     console.error(err);
@@ -319,6 +355,14 @@ async function finalizeWinner(final){
 
   const shareUrl = window.location.origin + window.location.pathname + `?videoId=${encodeURIComponent(currentVideoId)}&winner=${encodeURIComponent(final.channelId || final.author)}`;
   shareBtn.onclick = ()=>{ if(navigator.clipboard) navigator.clipboard.writeText(shareUrl); shareMsg.textContent='Link copied'; setTimeout(()=>shareMsg.textContent='',1500); };
+
+  // hide/reset progress ring and re-enable start label (so UI is back to normal)
+  resetProgress();
+  startLabel.textContent = 'START';
+  startCircle.setAttribute('aria-pressed','false');
+  startCircle.style.pointerEvents = 'auto';
+  // hide start box if you prefer to remove it once winner shown — currently keep it visible as original flow
+  // startBox.style.display = 'none';
 }
 
 /* ---------- start raffle (zero delay) ---------- */
@@ -330,26 +374,41 @@ async function startRaffle(){
   const seq = buildSequence(final);
 
   // immediate UI changes
-  startBox.style.display='none';
+  // do NOT hide startBox — we keep it visible during the progress animation
   pickAgainBtn.style.display='none';
   shareRow.style.display='none';
   avatarWrap.style.display='flex';
   handleEl.style.display='block';
   commentBox.style.display='block';
 
+  // disable start while running
+  startCircle.setAttribute('aria-pressed','true');
+  startCircle.style.pointerEvents = 'none';
+  startLabel.textContent = ''; // center label removed while animating (ring visible)
+
+  // start progress ring animation for RAFFLE_DURATION_MS
+  animateProgress(RAFFLE_DURATION_MS);
+
+  // start shuffling immediately (no lag)
   let i=0;
   const iv = setInterval(()=>{
     const c = seq[i];
-    // update avatar + name + comment EVERY tick (fixes previous issue)
+    // update avatar + name + comment EVERY tick
     avatarImg.src = c.profileImageUrl || avatarImg.src || '/mnt/data/Screenshot 2025-11-19 123255.png';
     handleEl.textContent = '@' + (c.author || '');
     commentBox.textContent = c.comment || '';
     i++;
     if(i >= seq.length){
       clearInterval(iv);
-      finalizeWinner(final);
+      // small timeout to allow progress ring to finish exactly with raffle duration
+      // but ensure finalize runs after RAFFLE_DURATION_MS in case ticks finish earlier/later
     }
   }, TICK_MS);
+
+  // ensure finalize runs exactly when ring completes
+  setTimeout(()=>{
+    finalizeWinner(final);
+  }, RAFFLE_DURATION_MS + 50); // tiny safety buffer
 }
 
 /* ---------- UI hooks ---------- */
