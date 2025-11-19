@@ -1,366 +1,306 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>YouTube Random Comment Picker — Minimal</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Random Comment Picker</title>
+
 <style>
-:root{
-  --brand:#1788D1;
-  --white:#ffffff;
-  --dark:#052536;
-  --card-radius:18px;
-  --shadow: 0 18px 44px rgba(3,25,40,0.12);
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(--brand);color:var(--white);-webkit-font-smoothing:antialiased}
-.container{max-width:980px;margin:26px auto;padding:20px}
+    body{
+        margin:0;
+        font-family: Arial, sans-serif;
+        background:#1ca0ff;
+        padding:40px;
+        color:#fff;
+        text-align:center;
+    }
 
-/* header */
-.header{text-align:center;margin-bottom:18px}
-.title{font-size:40px;font-weight:900;margin:0}
-.subtitle{font-size:18px;font-weight:700;margin-top:8px;opacity:.95;text-transform:uppercase}
+    .box{
+        background:#fff;
+        width:85%;
+        max-width:900px;
+        margin:20px auto;
+        padding:30px;
+        border-radius:20px;
+        box-shadow:0 8px 30px rgba(0,0,0,0.16);
+        color:#000;
+    }
 
-/* main white card */
-.whiteCard{
-  background:var(--white);
-  color:var(--dark);
-  border-radius:22px;
-  padding:26px;
-  box-shadow:var(--shadow);
-  width:100%;
-}
+    .inputField{
+        width:95%;
+        padding:15px;
+        border-radius:50px;
+        border:2px solid #007adf;
+        font-size:17px;
+        margin-top:12px;
+    }
 
-/* labels & input */
-.labelText{font-weight:900;font-size:13px;color:var(--dark);margin-bottom:12px}
-.inputMain{
-  width:100%;
-  padding:14px 18px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,0.06);
-  background:#fbfdff;
-  color:var(--dark);
-  font-size:16px;
-  margin-bottom:18px;
-  box-shadow:0 8px 18px rgba(0,0,0,0.06);
-}
+    .btn{
+        background:#007adf;
+        color:#fff;
+        padding:14px 20px;
+        border-radius:50px;
+        border:none;
+        width:70%;
+        font-size:18px;
+        margin-top:20px;
+        cursor:pointer;
+    }
 
-/* filters (inside card) */
-.filterRow{display:flex;flex-direction:column;gap:14px;margin-bottom:22px}
-.checkbox{display:flex;align-items:center;gap:10px;font-weight:900;color:var(--dark);cursor:pointer}
+    .winnerBox{
+        background:#fff;
+        width:85%;
+        max-width:700px;
+        padding:35px;
+        margin:30px auto;
+        border-radius:20px;
+        box-shadow:0 8px 30px rgba(0,0,0,0.16);
+        color:#000;
+    }
 
-/* hashtag input */
-.collapse{display:none;margin-top:6px}
-.inputSmall{padding:10px;border-radius:12px;border:none;background:#fff;color:var(--dark);box-shadow:0 8px 18px rgba(0,0,0,0.06);width:60%;}
+    /* ------------ CIRCLE PROGRESS ANIMATION --------------- */
 
-/* load button & count */
-.loadBtn{width:100%;padding:14px;border-radius:999px;border:none;background:var(--brand);color:#fff;font-weight:900;cursor:pointer;box-shadow:0 12px 28px rgba(0,0,0,0.12);font-size:16px}
-.countText{margin-top:18px;font-weight:900;font-size:16px;color:var(--dark);text-align:center}
+    .circleWrapper{
+        position:relative;
+        width:170px;
+        height:170px;
+        margin:0 auto;
+    }
 
-/* stage card (vertical minimal) */
-.stage{
-  margin-top:22px;background:var(--white);color:var(--dark);border-radius:22px;padding:30px;box-shadow:var(--shadow);
-  display:none;flex-direction:column;align-items:center;gap:12px;
-}
+    .progressRing{
+        position:absolute;
+        top:0; left:0;
+        width:170px;
+        height:170px;
+        transform:rotate(-90deg);
+    }
 
-/* avatar OR trophy icon inside circle */
-.avatar{width:140px;height:140px;border-radius:999px;overflow:hidden;border:8px solid var(--brand);display:none;background:white;position:relative}
-.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .progressRing circle{
+        fill:none;
+        stroke:#1ca0ff;
+        stroke-width:12;
+        stroke-linecap:round;
+        stroke-dasharray:530;
+        stroke-dashoffset:530;
+    }
 
-/* TROPHY ICON (centered) */
-#trophyIcon{
-  width:80px;
-  opacity:0.85;
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  display:none;
-}
+    .progressAnimate{
+        animation:progressAnim 10s linear forwards;
+    }
 
-/* handle and comment */
-.handle{display:none;text-align:center;font-weight:900;color:var(--brand);font-size:20px;margin-top:6px}
-.handle a{text-decoration:none;color:var(--brand)}
-.commentBox{display:none;background:#f7fbff;color:#114b63;padding:14px 18px;border-radius:12px;margin-top:6px;max-width:86%;text-align:center;box-shadow:0 8px 20px rgba(3,48,80,0.04)}
+    @keyframes progressAnim{
+        from{ stroke-dashoffset:530; }
+        to{ stroke-dashoffset:0; }
+    }
 
-/* start circle */
-.startBox{display:none;align-items:center;flex-direction:column;margin-top:10px}
-.startCircle{width:150px;height:150px;border-radius:999px;border:12px solid var(--brand);background:var(--white);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--dark);cursor:pointer;box-shadow:0 28px 60px rgba(3,48,80,0.14)}
-.startHint{color:#588aa8;margin-top:10px}
+    .trophyIcon{
+        position:absolute;
+        top:50%;
+        left:50%;
+        transform:translate(-50%, -50%);
+        font-size:70px;
+        color:#f4c844;
+    }
 
-/* pick again + share */
-.pickAgain{display:none;margin-top:12px;width:220px;background:var(--brand);color:#fff;padding:12px;border-radius:12px;border:none;font-weight:900;cursor:pointer}
-.shareRow{display:none;margin-top:8px;gap:10px;align-items:center;display:flex}
-.shareBtn{background:#0b6aa6;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:800}
+    .winnerPic{
+        width:150px;
+        height:150px;
+        border-radius:50%;
+        margin:0 auto;
+        display:none;
+        object-fit:cover;
+        border:4px solid #1ca0ff;
+    }
 
-/* confetti */
-#confetti{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:9999}
+    .winnerName{
+        margin-top:15px;
+        font-size:26px;
+        font-weight:bold;
+        color:#007adf;
+    }
 
-/* responsive */
-@media(max-width:720px){
-  .title{font-size:30px}
-  .avatar{width:110px;height:110px;border-width:6px}
-  .startCircle{width:120px;height:120px}
-  .inputSmall{width:100%}
-}
+    .winnerComment{
+        margin-top:10px;
+        font-size:18px;
+        background:#eef7ff;
+        padding:10px 18px;
+        border-radius:12px;
+        display:inline-block;
+    }
+
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="title">YOUTUBE RANDOM COMMENT PICKER</div>
-      <div class="subtitle">giveaway winner picker</div>
+
+<h1>YouTube Random Comment Picker</h1>
+<h3>Giveaway Winner Picker</h3>
+
+<div class="box">
+
+    <label style="font-size:15px;font-weight:bold;">VIDEO LINK BELOW</label><br>
+    <input id="videoLink" class="inputField" placeholder="Paste YouTube link here">
+
+    <div style="text-align:left;margin-top:20px;margin-left:8%;">
+        <label>
+            <input type="checkbox" id="filterDup" checked>
+            Filter duplicate & bot comments
+        </label>
+        <br><br>
+        <label>
+            <input type="checkbox" id="filterWord">
+            Filter comments by a word / hashtag
+        </label>
+        <br>
+        <input id="wordBox" class="inputField" style="display:none;margin-top:10px;" placeholder="Enter word / hashtag">
     </div>
 
-    <!-- WHITE CARD -->
-    <div class="whiteCard">
-      <div class="labelText">VIDEO LINK BELOW</div>
-      <input id="videoLink" class="inputMain" placeholder="https://youtu.be/..." />
+    <button id="loadBtn" class="btn">GET TOTAL UNIQUE COMMENTS</button>
 
-      <div class="filterRow">
-        <label class="checkbox"><input id="filterDup" type="checkbox" checked> FILTER DUPLICATE &amp; BOT COMMENTS</label>
+    <p id="countText" style="font-size:18px;font-weight:bold;margin-top:15px;display:none;">
+        Amount of comments: <span id="countNum">0</span>
+    </p>
 
-        <div>
-          <label class="checkbox"><input id="useFilterWords" type="checkbox"> FILTER COMMENTS BY WORD / HASHTAG</label>
-          <div id="collapse" class="collapse">
-            <input id="filterWords" class="inputSmall" placeholder="e.g. giveaway,#win,subscribe" />
-          </div>
-        </div>
-      </div>
+</div>
 
-      <button id="loadBtn" class="loadBtn">GET TOTAL UNIQUE COMMENTS</button>
-      <div id="countText" class="countText">Amount of comments: 0</div>
-    </div>
+<!-- WINNER AREA -->
+<div id="winnerArea" class="winnerBox" style="display:none;">
+    <p style="margin-top:-10px;font-size:15px;color:#555;">Click START to pick a winner</p>
 
-    <!-- STAGE -->
-    <div id="stage" class="stage">
-      <div id="topHint" class="hintTiny">Click START to pick a winner</div>
-
-      <div id="avatarWrap" class="avatar">
-        <!-- WINNER IMAGE -->
-        <img id="avatarImg" alt="profile" src="" style="display:none;">
-        <!-- NEW: TROPHY ICON -->
-        <svg id="trophyIcon" viewBox="0 0 24 24" fill="#f4b400">
-          <path d="M17 3h-2V2H9v1H7a1 1 0 0 0-1 1v3a5 5 0 0 0 4 4.9V15H8v2h8v-2h-2v-3.1A5 5 0 0 0 18 7V4a1 1 0 0 0-1-1zm-8 4V5h1v4.17A3.001 3.001 0 0 1 9 7zm7 0a3.001 3.001 0 0 1-1 2.17V5h1z"/>
+    <div class="circleWrapper">
+        <svg class="progressRing">
+            <circle cx="85" cy="85" r="84"></circle>
         </svg>
-      </div>
 
-      <div id="handle" class="handle"></div>
-      <div id="commentBox" class="commentBox"></div>
-
-      <div id="startBox" class="startBox">
-        <div id="startCircle" class="startCircle">START</div>
-        <div class="startHint">Click to begin 10s raffle</div>
-      </div>
-
-      <button id="pickAgain" class="pickAgain">PICK A NEW WINNER</button>
-
-      <div id="shareRow" class="shareRow">
-        <button id="shareBtn" class="shareBtn">COPY WINNER LINK</button>
-        <div id="shareMsg" style="font-weight:800;color:var(--dark)"></div>
-      </div>
+        <div id="trophy" class="trophyIcon">🏆</div>
+        <img id="winnerPic" class="winnerPic">
     </div>
-  </div>
 
-  <div id="confetti"></div>
+    <div id="name" class="winnerName"></div>
+    <div id="comment" class="winnerComment"></div>
+
+    <button id="startBtn" class="btn" style="margin-top:25px;">START</button>
+    <button id="newBtn" class="btn" style="margin-top:25px;display:none;">PICK ANOTHER WINNER</button>
+</div>
 
 <script>
-
-/* ------------------ SAME JS AS BEFORE EXCEPT 2 CHANGES ------------------
-   CHANGE 1 → During shuffle: show trophy, hide avatar image
-   CHANGE 2 → After winner selected: show avatar image, hide trophy
-   CHANGE 3 → Clean single '@' name
-------------------------------------------------------------------------- */
-
+/* --------------------------------------------------
+    Comment Loading + Filtering
+-------------------------------------------------- */
 const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzS2QT2vSJ_RoXiQACij7iUWcmcJqFBHEelNrC7h1-XfRcdOx1gdQ1ZvJQuNruRRXM9xA/exec";
 
-const RAFFLE_DURATION_MS = 10000;
-const TICK_MS = 40;
-
 let comments = [];
-let pickPool = [];
-let usedSet = new Set();
-let currentVideoId = "";
+let usedWinners = [];
+let raffleInterval = null;
+let raffleRunning = false;
 
-const videoLinkEl = document.getElementById('videoLink');
-const loadBtn = document.getElementById('loadBtn');
-const countText = document.getElementById('countText');
+document.getElementById("filterWord").onchange = function(){
+    document.getElementById("wordBox").style.display = this.checked ? "block" : "none";
+};
 
-const filterDupEl = document.getElementById('filterDup');
-const useFilterWords = document.getElementById('useFilterWords');
-const collapse = document.getElementById('collapse');
-const filterWordsEl = document.getElementById('filterWords');
+/* ------------------- LOAD COMMENTS ------------------- */
+document.getElementById("loadBtn").onclick = async () => {
+    let link = document.getElementById("videoLink").value.trim();
+    let filterDup = document.getElementById("filterDup").checked;
+    let filterWord = document.getElementById("filterWord").checked;
+    let word = document.getElementById("wordBox").value.trim().toLowerCase();
 
-const stage = document.getElementById('stage');
-const startBox = document.getElementById('startBox');
-const startCircle = document.getElementById('startCircle');
+    if(!link){ alert("Enter YouTube link"); return; }
 
-const avatarWrap = document.getElementById('avatarWrap');
-const avatarImg = document.getElementById('avatarImg');
-const trophy = document.getElementById('trophyIcon');
+    document.getElementById("loadBtn").innerText = "Loading...";
+    document.getElementById("countText").style.display = "none";
 
-const handleEl = document.getElementById('handle');
-const commentBox = document.getElementById('commentBox');
+    let videoId;
+    try{
+        const u = new URL(link);
+        videoId = u.searchParams.get("v") || (u.hostname==="youtu.be" ? u.pathname.slice(1) : null);
+    }catch(e){}
 
-const pickAgainBtn = document.getElementById('pickAgain');
-const shareRow = document.getElementById('shareRow');
-const shareBtn = document.getElementById('shareBtn');
-const shareMsg = document.getElementById('shareMsg');
-const confettiEl = document.getElementById('confetti');
+    if(!videoId){ alert("Invalid URL"); return; }
 
-useFilterWords.addEventListener('change', ()=> collapse.style.display = useFilterWords.checked ? 'block' : 'none');
-
-function extractVideoId(link){
-  try{
-    const u = new URL(link);
-    if(u.searchParams.get('v')) return u.searchParams.get('v');
-    if(u.hostname === 'youtu.be') return u.pathname.replace('/','').split('?')[0];
-    if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2];
-  }catch(e){}
-  return null;
-}
-
-function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
-
-loadBtn.addEventListener('click', async ()=>{
-  const link = videoLinkEl.value.trim();
-  const vid = extractVideoId(link);
-  if(!vid){ countText.innerHTML='❌ Invalid YouTube URL'; return; }
-  currentVideoId = vid;
-
-  comments=[]; pickPool=[]; usedSet.clear();
-
-  avatarWrap.style.display='none';
-  avatarImg.style.display='none';
-  trophy.style.display='none';
-  handleEl.style.display='none';
-  commentBox.style.display='none';
-  pickAgainBtn.style.display='none';
-  shareRow.style.display='none';
-  startBox.style.display='none';
-  stage.style.display='none';
-
-  countText.innerHTML='⏳ Loading comments...';
-  loadBtn.disabled=true;
-
-  try{
-    const res = await fetch(`${BACKEND_URL}?videoId=${encodeURIComponent(vid)}&filterDup=${filterDupEl.checked}&filterWords=${encodeURIComponent(filterWordsEl.value||'')}`);
+    const res = await fetch(`${BACKEND_URL}?videoId=${videoId}`);
     const data = await res.json();
 
-    comments = data.comments || [];
-    pickPool = data.pickPool || [];
+    comments = data.pool || [];
 
-    countText.innerHTML = `Amount of comments: <strong>${data.uniqueUsers || comments.length}</strong>`;
-
-    stage.style.display='flex';
-    startBox.style.display='flex';
-    loadBtn.disabled=false;
-
-  }catch(e){
-    countText.innerHTML='❌ Error loading comments';
-    loadBtn.disabled=false;
-  }
-});
-
-function chooseFinal(){
-  const p = pickPool.filter(c => !usedSet.has(c.channelId));
-  if(p.length) return p[Math.random()*p.length | 0];
-
-  const pool = comments.filter(c => !usedSet.has(c.channelId));
-  if(pool.length === 0) return null;
-
-  return pool[Math.random()*pool.length | 0];
-}
-
-function buildSeq(final){
-  const steps = Math.max(40, Math.floor(RAFFLE_DURATION_MS/TICK_MS));
-  let pool = comments.filter(c => c.channelId !== final.channelId);
-  if(pool.length === 0) pool = comments.slice();
-
-  let seq=[];
-  while(seq.length < steps-1) seq = seq.concat(shuffle(pool.slice()));
-  seq = seq.slice(0, steps-1);
-  seq.push(final);
-  return seq;
-}
-
-function launchConfetti(){
-  const colors = ['#ffd66f','#ff9fa2','#9ef0b1','#9ed8ff','#d09eff','#ffd7a6'];
-  for(let i=0;i<24;i++){
-    const el=document.createElement('div');
-    el.style.position='absolute';
-    el.style.width=(6+Math.random()*8)+'px';
-    el.style.height=(10+Math.random()*14)+'px';
-    el.style.background=colors[(Math.random()*colors.length)|0];
-    el.style.left=(10+Math.random()*80)+'%';
-    el.style.top=(5+Math.random()*15)+'%';
-    el.style.borderRadius='2px';
-    confettiEl.appendChild(el);
-    const dx=(Math.random()-0.5)*700, dy=250+Math.random()*500;
-    el.animate([{opacity:1},{opacity:0}],{duration:1100,easing:'ease-out'});
-    setTimeout(()=>el.remove(),1300);
-  }
-}
-
-async function finalizeWinner(final){
-  usedSet.add(final.channelId);
-
-  // SHOW WINNER MODE
-  trophy.style.display='none';
-  avatarImg.style.display='block';
-  avatarWrap.style.display='flex';
-
-  avatarImg.src = final.profileImageUrl || '/mnt/data/Screenshot 2025-11-19 123255.png';
-
-  const cleanName = final.author.replace(/^@+/,''); // remove extra @
-  handleEl.style.display='block';
-  handleEl.innerHTML = `<a href="https://www.youtube.com/channel/${final.channelId}" target="_blank">@${cleanName}</a>`;
-
-  commentBox.style.display='block';
-  commentBox.textContent = final.comment || '';
-
-  pickAgainBtn.style.display='block';
-  shareRow.style.display='flex';
-
-  launchConfetti();
-}
-
-async function startRaffle(){
-  const final = chooseFinal();
-  if(!final){ countText.innerHTML='No users left'; return; }
-
-  // START SHUFFLE MODE
-  avatarWrap.style.display='flex';
-  avatarImg.style.display='none';
-  trophy.style.display='block';   // TROPHY VISIBLE DURING SHUFFLE ONLY
-  handleEl.style.display='block';
-  commentBox.style.display='block';
-
-  startBox.style.display='none';
-  pickAgainBtn.style.display='none';
-  shareRow.style.display='none';
-
-  const seq = buildSeq(final);
-
-  let i=0;
-  const iv = setInterval(()=>{
-    const c = seq[i];
-
-    // UPDATE ONLY NAME + COMMENT
-    const clean = c.author.replace(/^@+/, '');
-    handleEl.textContent = '@' + clean;
-    commentBox.textContent = c.comment || '';
-
-    i++;
-    if(i >= seq.length){
-      clearInterval(iv);
-      finalizeWinner(final);
+    if(filterWord){
+        comments = comments.filter(c => c.comment.toLowerCase().includes(word));
     }
-  }, TICK_MS);
+    if(filterDup){
+        let map = new Map();
+        comments.forEach(c => { if(!map.has(c.author)) map.set(c.author, c); });
+        comments = [...map.values()];
+    }
+
+    document.getElementById("countNum").innerText = comments.length;
+    document.getElementById("countText").style.display = "block";
+    document.getElementById("winnerArea").style.display = "block";
+    document.getElementById("loadBtn").innerText = "GET TOTAL UNIQUE COMMENTS";
+};
+
+/* --------------------------------------------------
+    RAFFLE ENGINE
+-------------------------------------------------- */
+
+function startCircleAnimation(){
+    const circle = document.querySelector(".progressRing circle");
+    circle.classList.remove("progressAnimate");
+    void circle.offsetWidth;
+    circle.classList.add("progressAnimate");
 }
 
-startCircle.addEventListener('click', startRaffle);
-pickAgainBtn.addEventListener('click', startRaffle);
+function startRaffle(){
+    if(raffleRunning) return;
+    raffleRunning = true;
+
+    usedWinners = usedWinners || [];
+
+    document.getElementById("winnerPic").style.display = "none";
+    document.getElementById("trophy").style.display = "block";
+    document.getElementById("name").innerText = "";
+    document.getElementById("comment").innerText = "";
+    document.getElementById("newBtn").style.display = "none";
+
+    startCircleAnimation();
+
+    raffleInterval = setInterval(()=>{
+        let r = comments[Math.floor(Math.random()*comments.length)];
+        document.getElementById("name").innerText = "@" + r.author.replace(/^@/, "");
+        document.getElementById("comment").innerText = r.comment;
+    },55);
+
+    setTimeout(()=>{
+        clearInterval(raffleInterval);
+        pickWinner();
+    },10000);
+}
+
+function pickWinner(){
+    raffleRunning = false;
+
+    let available = comments.filter(c => !usedWinners.includes(c.author));
+
+    if(available.length === 0){
+        alert("No more unique winners left!");
+        return;
+    }
+
+    let winner = available[Math.floor(Math.random()*available.length)];
+    usedWinners.push(winner.author);
+
+    document.getElementById("trophy").style.display = "none";
+    const img = document.getElementById("winnerPic");
+    img.src = winner.profileImageUrl;
+    img.style.display = "block";
+
+    document.getElementById("name").innerText = "@" + winner.author.replace(/^@/, "");
+    document.getElementById("comment").innerText = winner.comment;
+
+    document.getElementById("newBtn").style.display = "block";
+}
+
+/* BUTTON CONTROLS */
+document.getElementById("startBtn").onclick = () => startRaffle();
+document.getElementById("newBtn").onclick = () => startRaffle();
 
 </script>
 </body>
