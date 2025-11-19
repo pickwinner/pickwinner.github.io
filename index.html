@@ -63,47 +63,18 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
   display:none;flex-direction:column;align-items:center;gap:12px;
 }
 
-/* avatar */
+/* avatar fully visible on top */
 .avatar{width:140px;height:140px;border-radius:999px;overflow:hidden;border:8px solid var(--brand);display:none}
 .avatar img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* handle + comment */
+/* handle and comment */
 .handle{display:none;text-align:center;font-weight:900;color:var(--brand);font-size:20px;margin-top:6px}
 .handle a{text-decoration:none;color:var(--brand)}
 .commentBox{display:none;background:#f7fbff;color:#114b63;padding:14px 18px;border-radius:12px;margin-top:6px;max-width:86%;text-align:center;box-shadow:0 8px 20px rgba(3,48,80,0.04)}
 
-/* ---- START CIRCLE ---- */
-.startBox{display:none;align-items:center;flex-direction:column;margin-top:10px;position:relative}
-.startCircle{
-  width:150px;height:150px;border-radius:999px;border:12px solid var(--brand);
-  background:var(--white);display:flex;align-items:center;
-  justify-content:center;font-weight:900;color:var(--dark);
-  cursor:pointer;box-shadow:0 28px 60px rgba(3,48,80,0.14);
-  position:relative;z-index:2;
-}
-
-/* 🔵 NEW — Progress Circle around startCircle */
-.progressRing{
-  position:absolute;
-  width:170px;
-  height:170px;
-  top:-10px;
-  left:-10px;
-  pointer-events:none;
-  transform:rotate(-90deg);
-  display:none;
-}
-
-.progressRing circle{
-  fill:none;
-  stroke:var(--brand);
-  stroke-width:10;
-  stroke-linecap:round;
-  stroke-dasharray:565; /* full circumference */
-  stroke-dashoffset:565;
-  transition:stroke-dashoffset linear;
-}
-
+/* start circle */
+.startBox{display:none;align-items:center;flex-direction:column;margin-top:10px}
+.startCircle{width:150px;height:150px;border-radius:999px;border:12px solid var(--brand);background:var(--white);display:flex;align-items:center;justify-content:center;font-weight:900;color:var(--dark);cursor:pointer;box-shadow:0 28px 60px rgba(3,48,80,0.14)}
 .startHint{color:#588aa8;margin-top:10px}
 
 /* pick again + share */
@@ -114,6 +85,7 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
 /* confetti */
 #confetti{position:fixed;left:0;top:0;right:0;bottom:0;pointer-events:none;z-index:9999}
 
+/* responsive */
 @media(max-width:720px){
   .title{font-size:30px}
   .avatar{width:110px;height:110px;border-width:6px}
@@ -122,104 +94,302 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial;background:var(
 }
 </style>
 </head>
-
 <body>
-<div class="container">
-  <div class="header">
-    <div class="title">YOUTUBE RANDOM COMMENT PICKER</div>
-    <div class="subtitle">giveaway winner picker</div>
-  </div>
+  <div class="container">
+    <div class="header">
+      <div class="title">YOUTUBE RANDOM COMMENT PICKER</div>
+      <div class="subtitle">giveaway winner picker</div>
+    </div>
 
-  <div class="whiteCard">
-    <div class="labelText">VIDEO LINK BELOW</div>
-    <input id="videoLink" class="inputMain" placeholder="https://youtu.be/..."/>
+    <!-- MERGED WHITE CARD (link + filters + get total + count) -->
+    <div class="whiteCard">
+      <div class="labelText">VIDEO LINK BELOW</div>
+      <!-- input kept strictly inside the white card -->
+      <input id="videoLink" class="inputMain" placeholder="https://youtu.be/..." />
 
-    <div class="filterRow">
-      <label class="checkbox"><input id="filterDup" type="checkbox" checked> FILTER DUPLICATE & BOT COMMENTS</label>
-      <div>
-        <label class="checkbox"><input id="useFilterWords" type="checkbox"> FILTER COMMENTS BY WORD / HASHTAG</label>
-        <div id="collapse" class="collapse">
-          <input id="filterWords" class="inputSmall" placeholder="e.g. giveaway,#win,subscribe" />
+      <div class="filterRow">
+        <label class="checkbox"><input id="filterDup" type="checkbox" checked> FILTER DUPLICATE &amp; BOT COMMENTS</label>
+
+        <div>
+          <label class="checkbox"><input id="useFilterWords" type="checkbox"> FILTER COMMENTS BY WORD / HASHTAG</label>
+          <div id="collapse" class="collapse">
+            <input id="filterWords" class="inputSmall" placeholder="e.g. giveaway,#win,subscribe" />
+          </div>
         </div>
       </div>
+
+      <button id="loadBtn" class="loadBtn">GET TOTAL UNIQUE COMMENTS</button>
+      <div id="countText" class="countText">Amount of comments: 0</div>
     </div>
 
-    <button id="loadBtn" class="loadBtn">GET TOTAL UNIQUE COMMENTS</button>
-    <div id="countText" class="countText">Amount of comments: 0</div>
-  </div>
+    <!-- STAGE: avatar on top, handle, comment, pick again -->
+    <div id="stage" class="stage">
+      <div id="topHint" class="hintTiny">Click START to pick a winner</div>
 
-  <div id="stage" class="stage">
-    <div id="topHint" class="hintTiny">Click START to pick a winner</div>
+      <div id="avatarWrap" class="avatar"><img id="avatarImg" alt="profile" src="/mnt/data/Screenshot 2025-11-19 123255.png"></div>
 
-    <div id="avatarWrap" class="avatar">
-      <img id="avatarImg" alt="profile">
-    </div>
+      <div id="handle" class="handle"></div>
+      <div id="commentBox" class="commentBox"></div>
 
-    <div id="handle" class="handle"></div>
-    <div id="commentBox" class="commentBox"></div>
-
-    <div id="startBox" class="startBox">
-      
-      <!-- 🔵 NEW PROGRESS RING -->
-      <svg id="progressRing" class="progressRing">
-        <circle cx="85" cy="85" r="90"></circle>
-      </svg>
-
-      <div id="startCircle" class="startCircle" role="button" tabindex="0">
-        START
+      <div id="startBox" class="startBox">
+        <div id="startCircle" class="startCircle" role="button" tabindex="0">START</div>
+        <div class="startHint">Click to begin 10s raffle</div>
       </div>
 
-      <div class="startHint">Click to begin 10s raffle</div>
-    </div>
+      <button id="pickAgain" class="pickAgain">PICK A NEW WINNER</button>
 
-    <button id="pickAgain" class="pickAgain">PICK A NEW WINNER</button>
-
-    <div id="shareRow" class="shareRow">
-      <button id="shareBtn" class="shareBtn">COPY WINNER LINK</button>
-      <div id="shareMsg" style="font-weight:800;color:var(--dark)"></div>
+      <div id="shareRow" class="shareRow">
+        <button id="shareBtn" class="shareBtn">COPY WINNER LINK</button>
+        <div id="shareMsg" style="font-weight:800;color:var(--dark)"></div>
+      </div>
     </div>
   </div>
-</div>
 
-<div id="confetti"></div>
+  <div id="confetti"></div>
 
 <script>
-/* Your entire JS is unchanged — only added progressRing code */
+/* ---------- CONFIG ---------- */
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzS2QT2vSJ_RoXiQACij7iUWcmcJqFBHEelNrC7h1-XfRcdOx1gdQ1ZvJQuNruRRXM9xA/exec";
+const RAFFLE_DURATION_MS = 10000; // 10s
+const TICK_MS = 45; // smaller => faster, update avatar every tick
 
-const progressRing = document.getElementById("progressRing");
-const ringCircle = progressRing.querySelector("circle");
+/* ---------- STATE ---------- */
+let comments = [];       // visual pool (unique)
+let pickPool = [];       // priority
+let usedSet = new Set(); // winners persisted locally & backend
+let currentVideoId = "";
 
-function startProgress(){
-  progressRing.style.display="block";
-  ringCircle.style.transition = "none";
-  ringCircle.style.strokeDashoffset = 565;
-  setTimeout(()=>{
-    ringCircle.style.transition = "stroke-dashoffset 10s linear";
-    ringCircle.style.strokeDashoffset = 0;
-  },10);
+/* ---------- DOM ---------- */
+const videoLinkEl = document.getElementById('videoLink');
+const loadBtn = document.getElementById('loadBtn');
+const countText = document.getElementById('countText');
+
+const filterDupEl = document.getElementById('filterDup');
+const useFilterWords = document.getElementById('useFilterWords');
+const collapse = document.getElementById('collapse');
+const filterWordsEl = document.getElementById('filterWords');
+
+const stage = document.getElementById('stage');
+const startBox = document.getElementById('startBox');
+const startCircle = document.getElementById('startCircle');
+
+const avatarWrap = document.getElementById('avatarWrap');
+const avatarImg = document.getElementById('avatarImg');
+const handleEl = document.getElementById('handle');
+const commentBox = document.getElementById('commentBox');
+
+const pickAgainBtn = document.getElementById('pickAgain');
+const shareRow = document.getElementById('shareRow');
+const shareBtn = document.getElementById('shareBtn');
+const shareMsg = document.getElementById('shareMsg');
+const confettiEl = document.getElementById('confetti');
+
+useFilterWords.addEventListener('change', ()=> collapse.style.display = useFilterWords.checked ? 'block' : 'none');
+
+/* ---------- HELPERS ---------- */
+function extractVideoId(link){
+  try{
+    const u = new URL(link);
+    if(u.searchParams.get('v')) return u.searchParams.get('v');
+    if(u.hostname === 'youtu.be') return u.pathname.replace('/','').split('?')[0];
+    if(u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2];
+  }catch(e){}
+  return null;
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr; }
+
+/* ---------- LOAD comments (merged flow) ---------- */
+loadBtn.addEventListener('click', async ()=>{
+  const link = videoLinkEl.value.trim();
+  const vid = extractVideoId(link);
+  if(!vid){ countText.innerHTML = '❌ Invalid YouTube URL'; return; }
+  currentVideoId = vid;
+
+  // reset UI & state
+  comments = []; pickPool = []; usedSet = new Set();
+  avatarWrap.style.display='none';
+  handleEl.style.display='none'; handleEl.textContent='';
+  commentBox.style.display='none'; commentBox.textContent='';
+  pickAgainBtn.style.display='none'; shareRow.style.display='none';
+  startBox.style.display='none'; stage.style.display='none';
+
+  countText.innerHTML = '⏳ Loading comments...';
+  loadBtn.disabled = true;
+
+  try{
+    const url = `${BACKEND_URL}?videoId=${encodeURIComponent(vid)}&filterDup=${filterDupEl.checked}&filterWords=${encodeURIComponent(filterWordsEl.value||'')}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if(data && data.error){
+      countText.innerHTML = '❌ Backend error';
+      loadBtn.disabled = false;
+      return;
+    }
+
+    comments = (data.comments || []).slice();
+    pickPool = (data.pickPool || []).slice();
+    (data.usedWinners || []).forEach(u => usedSet.add(u));
+
+    // exclude used winners from visuals
+    comments = comments.filter(c => !usedSet.has(c.channelId));
+
+    const total = data.uniqueUsers || comments.length || 0;
+    countText.innerHTML = `Amount of comments: <strong>${total}</strong>`;
+
+    // show stage and START immediately (no delay)
+    stage.style.display='flex';
+    startBox.style.display='flex';
+    loadBtn.disabled = false;
+  }catch(err){
+    console.error(err);
+    countText.innerHTML = '❌ Error fetching comments';
+    loadBtn.disabled = false;
+  }
+});
+
+/* ---------- CHOOSING & SEQUENCE ---------- */
+function chooseFinalLocal(){
+  // prefer prioritized pool if present & not used
+  const prioritized = (pickPool || []).filter(p => !usedSet.has(p.channelId));
+  if(prioritized.length) return prioritized[Math.floor(Math.random()*prioritized.length)];
+  const pool = (comments || []).filter(c => !usedSet.has(c.channelId));
+  if(pool.length === 0) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
 }
 
-function stopProgress(){
-  progressRing.style.display="none";
-  ringCircle.style.strokeDashoffset = 565;
+function buildSequence(final){
+  const steps = Math.max(25, Math.floor(RAFFLE_DURATION_MS / TICK_MS));
+  let pool = comments.filter(c => c.channelId !== final.channelId);
+  if(pool.length === 0) pool = comments.slice();
+  let seq = [];
+  while(seq.length < steps - 1){
+    seq = seq.concat(shuffle(pool.slice()));
+  }
+  seq = seq.slice(0, steps - 1);
+  seq = shuffle(seq);
+  seq.push(final);
+  return seq;
 }
 
-/* PATCH into your existing raffle start */
-const oldStartRaffle = startRaffle;
+/* ---------- confetti ---------- */
+function launchConfetti(){
+  const colors = ['#ffd66f','#ff9fa2','#9ef0b1','#9ed8ff','#d09eff','#ffd7a6'];
+  for(let i=0;i<26;i++){
+    const el = document.createElement('div');
+    el.style.position='absolute';
+    el.style.width=(6+Math.random()*8)+'px';
+    el.style.height=(10+Math.random()*14)+'px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.left = (10 + Math.random()*80) + '%';
+    el.style.top = (5 + Math.random()*15) + '%';
+    el.style.borderRadius='2px';
+    confettiEl.appendChild(el);
+    const dx = (Math.random()-0.5)*700;
+    const dy = 250 + Math.random()*500;
+    el.animate([{transform:'translate(0,0) rotate(0deg)', opacity:1},{transform:`translate(${dx}px, ${dy}px) rotate(${Math.random()*720}deg)`, opacity:0.9}], {duration:1100 + Math.random()*900, easing:'cubic-bezier(.2,.8,.2,1)'});
+    setTimeout(()=> el.remove(), 1500 + Math.random()*900);
+  }
+}
 
-startRaffle = function(){
-  stopProgress();
-  startProgress();
-  oldStartRaffle();
-};
+/* ---------- finalize (persist async & show) ---------- */
+async function finalizeWinner(final){
+  if(!final) return;
+  usedSet.add(final.channelId);
+  comments = comments.filter(c => c.channelId !== final.channelId);
 
-/* PATCH finalize to stop animation */
-const oldFinalize = finalizeWinner;
-finalizeWinner = function(f){
-  stopProgress();
-  oldFinalize(f);
-};
+  // persist to backend (async)
+  fetch(BACKEND_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ action: 'markWinner', videoId: currentVideoId, channelId: final.channelId || final.author })
+  }).catch(e=>console.warn('persist failed', e));
+
+  // show the final winner UI
+  avatarWrap.style.display='flex';
+  avatarImg.src = final.profileImageUrl || avatarImg.src || '/mnt/data/Screenshot 2025-11-19 123255.png';
+  handleEl.style.display='block';
+  handleEl.innerHTML = final.channelId ? `<a href="https://www.youtube.com/channel/${final.channelId}" target="_blank">@${final.author}</a>` : `@${final.author}`;
+  commentBox.style.display='block';
+  commentBox.textContent = final.comment || '';
+
+  pickAgainBtn.style.display='block';
+  shareRow.style.display='flex';
+  launchConfetti();
+
+  const shareUrl = window.location.origin + window.location.pathname + `?videoId=${encodeURIComponent(currentVideoId)}&winner=${encodeURIComponent(final.channelId || final.author)}`;
+  shareBtn.onclick = ()=>{ if(navigator.clipboard) navigator.clipboard.writeText(shareUrl); shareMsg.textContent='Link copied'; setTimeout(()=>shareMsg.textContent='',1500); };
+}
+
+/* ---------- start raffle (zero delay) ---------- */
+async function startRaffle(){
+  // choose final locally (fast)
+  const final = chooseFinalLocal();
+  if(!final){ countText.innerHTML = 'No unique candidates left'; return; }
+
+  const seq = buildSequence(final);
+
+  // immediate UI changes
+  startBox.style.display='none';
+  pickAgainBtn.style.display='none';
+  shareRow.style.display='none';
+  avatarWrap.style.display='flex';
+  handleEl.style.display='block';
+  commentBox.style.display='block';
+
+  let i=0;
+  const iv = setInterval(()=>{
+    const c = seq[i];
+    // update avatar + name + comment EVERY tick (fixes previous issue)
+    avatarImg.src = c.profileImageUrl || avatarImg.src || '/mnt/data/Screenshot 2025-11-19 123255.png';
+    handleEl.textContent = '@' + (c.author || '');
+    commentBox.textContent = c.comment || '';
+    i++;
+    if(i >= seq.length){
+      clearInterval(iv);
+      finalizeWinner(final);
+    }
+  }, TICK_MS);
+}
+
+/* ---------- UI hooks ---------- */
+startCircle.addEventListener('click', startRaffle);
+pickAgainBtn.addEventListener('click', startRaffle);
+
+/* ---------- optional: load via query ---------- */
+(async function showFromQuery(){
+  const q = new URLSearchParams(location.search);
+  const vid = q.get('videoId');
+  const winner = q.get('winner');
+  if(vid){
+    videoLinkEl.value = 'https://www.youtube.com/watch?v=' + vid;
+    loadBtn.click();
+    if(winner){
+      const poll = setInterval(async ()=>{
+        if(stage.style.display === 'flex'){
+          clearInterval(poll);
+          try{
+            const url = `${BACKEND_URL}?videoId=${encodeURIComponent(vid)}&filterDup=${filterDupEl.checked}&filterWords=${encodeURIComponent(filterWordsEl.value||'')}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const all = (data.pickPool||[]).concat(data.comments||[]);
+            const found = all.find(x => (x.channelId == winner) || (x.author && x.author.toLowerCase() === winner.toLowerCase()));
+            if(found){
+              avatarWrap.style.display='flex';
+              avatarImg.src = found.profileImageUrl || avatarImg.src || '/mnt/data/Screenshot 2025-11-19 123255.png';
+              handleEl.style.display='block';
+              handleEl.innerHTML = found.channelId ? `<a href="https://www.youtube.com/channel/${found.channelId}" target="_blank">@${found.author}</a>` : `@${found.author}`;
+              commentBox.style.display='block';
+              commentBox.textContent = found.comment || '';
+              pickAgainBtn.style.display='block';
+              shareRow.style.display='flex';
+            }
+          }catch(e){}
+        }
+      },500);
+    }
+  }
+})();
 </script>
-
 </body>
 </html>
